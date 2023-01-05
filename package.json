@@ -1,6 +1,6 @@
 {
   "name": "node-rdap",
-  "version": "0.0.4",
+  "version": "0.1.0",
   "type": "module",
   "main": "./dist/tsc/client.js",
   "types": "./dist/tsc/client.d.ts",
