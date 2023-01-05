@@ -1,12 +1,16 @@
 {
   "name": "node-rdap",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "type": "module",
   "main": "./dist/tsc/client.js",
   "types": "./dist/tsc/client.d.ts",
   "files": [
     "dist/**/*"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/dcoffey-zengenti/node-rdap"
+  },
   "author": "Derry coffey <d.coffey@zengenti.com>",
   "license": "MIT",
   "keywords": [

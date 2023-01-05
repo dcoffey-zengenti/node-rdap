@@ -1,3 +1,7 @@
+# 0.0.4
+
+Added repository info to package json.
+
 # 0.0.3
 
 Now only available as ESM package.
