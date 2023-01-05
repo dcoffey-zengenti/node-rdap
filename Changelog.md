@@ -1,4 +1,6 @@
-# 0.0.4
+# 0.1.0
+
+Beta Release v1
 
 Added repository info to package json.
 
