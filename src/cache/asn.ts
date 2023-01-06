@@ -1,6 +1,6 @@
 import NodeCache from "node-cache";
 import { inRange } from "../utils/autnum";
-import { DNSList, fetchASNList } from "../utils/dns";
+import { fetchASNList } from "../utils/dns";
 
 export class AutnumCache {
   autnumCache: NodeCache;
