@@ -1,3 +1,7 @@
+# 0.2.0
+
+Changed the caching strategy for faster lookups of same IP/Domain/Autnum.
+
 # 0.1.0
 
 Beta Release v1
