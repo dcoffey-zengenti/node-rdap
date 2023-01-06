@@ -3,20 +3,28 @@ import { inRange } from "../utils/autnum";
 import { DNSList, fetchASNList } from "../utils/dns";
 
 export class AutnumCache {
-  cache: NodeCache;
+  autnumCache: NodeCache;
+  rangeCache: NodeCache;
   constructor() {
-    this.cache = new NodeCache({
+    this.autnumCache = new NodeCache({
+      stdTTL: 86400,
+      checkperiod: 17280,
+      useClones: false,
+    });
+    this.rangeCache = new NodeCache({
       useClones: false,
     });
   }
 
   async get(autonomousSystemNumber: number): Promise<string | null> {
-    const autnumRanges = this.cache.keys();
+    const registry = this.autnumCache.get<string>(autonomousSystemNumber);
+    if (registry) return registry;
+    const autnumRanges = this.rangeCache.keys();
     const rangeMatch = autnumRanges.find((autnumRange) =>
       inRange(autonomousSystemNumber, autnumRange)
     );
     if (rangeMatch) {
-      const registry = this.cache.get<string>(rangeMatch);
+      const registry = this.rangeCache.get<string>(rangeMatch);
       return registry || null;
     } else {
       let registry: string | null = null;
@@ -24,7 +32,7 @@ export class AutnumCache {
       for (const service of asn.services) {
         for (const asnRange of service[0]) {
           const server = service[1][0];
-          this.cache.set<string>(
+          this.rangeCache.set<string>(
             asnRange,
             server.endsWith("/") ? server.slice(0, -1) : server
           );
@@ -37,21 +45,22 @@ export class AutnumCache {
     }
   }
 
-  async set(asnList: DNSList) {
-    for (const service of asnList.services) {
-      for (const asn of service[0]) {
-        if (!this.cache.has(asn)) {
-          const server = service[1][0];
-          this.cache.set<string>(
-            asn,
-            server.endsWith("/") ? server.slice(0, -1) : server
-          );
-        }
+  async reset() {
+    this.flush();
+    const asn = await fetchASNList();
+    for (const service of asn.services) {
+      for (const asnRange of service[0]) {
+        const server = service[1][0];
+        this.rangeCache.set<string>(
+          asnRange,
+          server.endsWith("/") ? server.slice(0, -1) : server
+        );
       }
     }
   }
 
   flush() {
-    this.cache.flushAll();
+    this.autnumCache.flushAll();
+    this.rangeCache.flushAll();
   }
 }
