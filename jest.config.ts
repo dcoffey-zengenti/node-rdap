@@ -4,6 +4,7 @@ export default {
     "ts-jest": {
       // without this, you git really frustrating errors.
       useESM: true,
+      tsconfig: "<rootDir>/tsconfig.jest.json",
     },
   },
 

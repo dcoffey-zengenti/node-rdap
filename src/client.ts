@@ -41,7 +41,16 @@ export const domain = async (domain: string) => {
 
   if (rdapServer) {
     const requestUrl = `${rdapServer}/domain/${fqdn}`;
-    return await got(requestUrl).json<RdapDomainResponse>();
+    try {
+      return await got(requestUrl, {
+        headers: {
+          accept:
+            "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+        },
+      }).json<RdapDomainResponse>();
+    } catch (e) {
+      return null;
+    }
   }
   return null;
 };
