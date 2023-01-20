@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { autnum, domain, ip } from "./client";
 import { program, InvalidArgumentError } from "commander";
 import * as readline from "readline";
@@ -24,8 +26,6 @@ program
   .description("CLI for querying rdap via nodejs")
   .version("0.3.0");
 
-program.exitOverride();
-
 program
   .command("domain")
   .description("Lookup a domains whois info via RDAP")
@@ -44,18 +44,23 @@ program
   .argument("<autnum>", "The Autonomous System Number to lookup", parseArgInt)
   .action(async (arg: number) => doCommand(autnum, arg));
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-  terminal: true,
-});
+if (process.argv.length > 2) {
+  program.parse();
+} else {
+  program.exitOverride();
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+    terminal: true,
+  });
 
-rl.on("line", (line) => {
-  const commands = line.split(" ");
-  try {
-    program.parse(commands, { from: "user" });
-  } catch (e) {
-    // Show the help info if command doesn't exist.
-    console.log(program.helpInformation());
-  }
-});
+  rl.on("line", (line) => {
+    const commands = line.split(" ");
+    try {
+      program.parse(commands, { from: "user" });
+    } catch (e) {
+      // Show the help info if command doesn't exist.
+      console.log(program.helpInformation());
+    }
+  });
+}

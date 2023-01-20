@@ -2,6 +2,9 @@
   "name": "node-rdap",
   "version": "0.2.0",
   "type": "module",
+  "bin": {
+    "node-rdap": "./dist/tsc/cli.js"
+  },
   "main": "./dist/tsc/client.js",
   "types": "./dist/tsc/client.d.ts",
   "files": [
