@@ -52,13 +52,3 @@ export const isFullyQualifiedDomainName = (str: string) => {
     return true;
   });
 };
-
-export const getFullyQualifiedDomainName = (urlOrDomain: string) => {
-  if (isFullyQualifiedDomainName(urlOrDomain)) return urlOrDomain;
-  try {
-    const url = new URL(urlOrDomain);
-    if (isFullyQualifiedDomainName(url.hostname)) return url.hostname;
-  } finally {
-    return null;
-  }
-};

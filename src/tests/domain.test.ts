@@ -5,11 +5,11 @@ describe("client querying a domain", () => {
   test("should return json for valid domain.", async () => {
     let result: RdapDomainResponse | null = null;
     result = await domain("insytful.com");
-    expect(result).not.toBe(null);
+    expect(result).not.toBeNull();
     result = await domain("insytful.co.uk");
-    expect(result).not.toBe(null);
+    expect(result).not.toBeNull();
     result = await domain("contensis.com");
-    expect(result).not.toBe(null);
+    expect(result).not.toBeNull();
   });
 
   test("should return error for invalid TLD", async () => {
@@ -41,8 +41,8 @@ describe("client querying a domain", () => {
   test("should return null for non-existant domain", async () => {
     let result: RdapDomainResponse | null = null;
     result = await domain("insytful-contensis-party-time.com");
-    expect(result).toBe(null);
+    expect(result).toBeNull();
     result = await domain("insytful-contensis-party-time.co.uk");
-    expect(result).toBe(null);
+    expect(result).toBeNull();
   });
 });

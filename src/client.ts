@@ -8,7 +8,7 @@ import {
   RdapDomainResponse,
   RdapIpResponse,
 } from "./types";
-import { getFullyQualifiedDomainName, getTopLevelDomain } from "./utils/domain";
+import { getTopLevelDomain, isFullyQualifiedDomainName } from "./utils/domain";
 
 const dnsCache = new DNSCache();
 const ipv4Cache = new IPV4Cache();
@@ -31,12 +31,10 @@ const resolveRdapServerByDomain = async (domain: string) => {
   return rdapServer;
 };
 
-export const domain = async (domain: string) => {
-  const fqdn = getFullyQualifiedDomainName(domain);
-  if (!fqdn) {
-    throw new Error("Could not resolve the given domain.");
+export const domain = async (fqdn: string) => {
+  if (!isFullyQualifiedDomainName(fqdn)) {
+    throw new Error("The given domain could not be validated.");
   }
-
   const rdapServer = await resolveRdapServerByDomain(fqdn);
 
   if (rdapServer) {
