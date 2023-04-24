@@ -1,14 +1,17 @@
 import got from "got";
-import { AutnumCache } from "./cache/asn";
-import { DNSCache } from "./cache/dns";
-import { IPV4Cache } from "./cache/ipv4";
-import { IPV6Cache } from "./cache/ipv6";
+import { AutnumCache } from "./cache/asn.js";
+import { DNSCache } from "./cache/dns.js";
+import { IPV4Cache } from "./cache/ipv4.js";
+import { IPV6Cache } from "./cache/ipv6.js";
 import {
   RdapAutnumResponse,
   RdapDomainResponse,
   RdapIpResponse,
-} from "./types";
-import { getTopLevelDomain, isFullyQualifiedDomainName } from "./utils/domain";
+} from "./types.js";
+import {
+  getTopLevelDomain,
+  isFullyQualifiedDomainName,
+} from "./utils/domain.js";
 
 const dnsCache = new DNSCache();
 const ipv4Cache = new IPV4Cache();

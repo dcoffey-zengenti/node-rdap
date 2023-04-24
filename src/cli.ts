@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { autnum, domain, ip } from "./client";
+import { autnum, domain, ip } from "./client.js";
 import { program, InvalidArgumentError } from "commander";
 import * as readline from "readline";
 
