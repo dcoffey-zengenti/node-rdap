@@ -7,28 +7,25 @@ export interface DNSList {
   version: string;
 }
 
-const map = new Map();
+const cache = new Map();
+
+const fetchList = async (url: string): Promise<DNSList> => {
+  const response = got(url, { cache });
+  return response.json<DNSList>();
+};
 
 export const fetchDNSList = async () => {
-  return await got("https://data.iana.org/rdap/dns.json", {
-    cache: map,
-  }).json<DNSList>();
+  return fetchList("https://data.iana.org/rdap/dns.json");
 };
 
 export const fetchIpv4List = async () => {
-  return await got("https://data.iana.org/rdap/ipv4.json", {
-    cache: map,
-  }).json<DNSList>();
+  return fetchList("https://data.iana.org/rdap/ipv4.json");
 };
 
 export const fetchIpv6List = async () => {
-  return await got("https://data.iana.org/rdap/ipv6.json", {
-    cache: map,
-  }).json<DNSList>();
+  return fetchList("https://data.iana.org/rdap/ipv6.json");
 };
 
 export const fetchASNList = async () => {
-  return await got("https://data.iana.org/rdap/asn.json", {
-    cache: map,
-  }).json<DNSList>();
+  return fetchList("https://data.iana.org/rdap/asn.json");
 };
