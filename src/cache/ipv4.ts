@@ -1,5 +1,5 @@
 import NodeCache from "node-cache";
-import { fetchIpv4List } from "../utils/dns";
+import { fetchIpv4List } from "../utils/dns.js";
 import { matches } from "ip-matching";
 
 export class IPV4Cache {

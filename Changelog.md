@@ -1,4 +1,4 @@
-# 0.3.3
+# 0.3.5
 
 Fixed an issue with imports not working without the `--es-module-specifier-resolution=node` flag.
 

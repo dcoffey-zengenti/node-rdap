@@ -1,5 +1,5 @@
 import NodeCache from "node-cache";
-import { DNSList, fetchDNSList } from "../utils/dns";
+import { DNSList, fetchDNSList } from "../utils/dns.js";
 
 export class DNSCache {
   cache: NodeCache;
