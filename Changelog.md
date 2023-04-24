@@ -1,3 +1,7 @@
+# 0.3.3
+
+Fixed an issue with imports not working without the `--es-module-specifier-resolution=node` flag.
+
 # 0.2.0
 
 Changed the caching strategy for faster lookups of same IP/Domain/Autnum.
