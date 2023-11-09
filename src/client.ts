@@ -69,7 +69,12 @@ export const ip = async (ip: string) => {
 
   if (rdapServer) {
     const requestUrl = `${rdapServer}/ip/${ip}`;
-    return await got(requestUrl).json<RdapIpResponse>();
+    return await got(requestUrl, {
+      headers: {
+        accept:
+          "application/json,application/rdap+json,*/*;q=0.8",
+      },
+    }).json<RdapIpResponse>();
   }
   return null;
 };
