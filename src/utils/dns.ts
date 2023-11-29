@@ -10,7 +10,12 @@ export interface DNSList {
 const cache = new Map();
 
 const fetchList = async (url: string): Promise<DNSList> => {
-  const response = got(url, { cache });
+  const response = got(url, {
+    cache,
+    headers: {
+      accept: "application/json,application/rdap+json",
+    },
+  });
   return response.json<DNSList>();
 };
 

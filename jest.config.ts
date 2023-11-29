@@ -13,5 +13,8 @@ export default {
 
   // also important to not have anything in here
   transformIgnorePatterns: [],
+  moduleNameMapper: {
+    "(.+)\\.js": "$1",
+  },
   testPathIgnorePatterns: ["/node_modules/", "dist"],
 };

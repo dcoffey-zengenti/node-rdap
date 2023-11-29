@@ -45,8 +45,7 @@ export const domain = async (fqdn: string) => {
     try {
       return await got(requestUrl, {
         headers: {
-          accept:
-            "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+          accept: "application/json,application/rdap+json",
         },
       }).json<RdapDomainResponse>();
     } catch (e) {
@@ -69,7 +68,11 @@ export const ip = async (ip: string) => {
 
   if (rdapServer) {
     const requestUrl = `${rdapServer}/ip/${ip}`;
-    return await got(requestUrl).json<RdapIpResponse>();
+    return await got(requestUrl, {
+      headers: {
+        accept: "application/json,application/rdap+json",
+      },
+    }).json<RdapIpResponse>();
   }
   return null;
 };
@@ -84,7 +87,11 @@ export const autnum = async (autnum: number) => {
 
   if (rdapServer) {
     const requestUrl = `${rdapServer}/autnum/${autnum}`;
-    return await got(requestUrl).json<RdapAutnumResponse>();
+    return await got(requestUrl, {
+      headers: {
+        accept: "application/json,application/rdap+json",
+      },
+    }).json<RdapAutnumResponse>();
   }
   return null;
 };

@@ -1,3 +1,7 @@
+# 0.3.6
+
+Fixed accept header being limited to just `application/json`. `application/rdap+json` is now also allowed.
+
 # 0.3.5
 
 Fixed an issue with imports not working without the `--es-module-specifier-resolution=node` flag.
