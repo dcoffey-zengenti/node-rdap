@@ -1,5 +1,3 @@
-import got from "got";
-
 export interface DNSList {
   description: string;
   publication: string;
@@ -7,16 +5,13 @@ export interface DNSList {
   version: string;
 }
 
-const cache = new Map();
-
 const fetchList = async (url: string): Promise<DNSList> => {
-  const response = got(url, {
-    cache,
+  const response = await fetch(url, {
     headers: {
       accept: "application/json,application/rdap+json",
     },
   });
-  return response.json<DNSList>();
+  return response.json();
 };
 
 export const fetchDNSList = async () => {

@@ -18,7 +18,7 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "importHelpers": true,
+    "importHelpers": false,
     "skipLibCheck": true,
     "outDir": "./dist/tsc/",
     "types": ["node", "jest"],

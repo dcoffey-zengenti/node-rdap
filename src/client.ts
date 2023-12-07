@@ -1,4 +1,3 @@
-import got from "got";
 import { AutnumCache } from "./cache/asn.js";
 import { DNSCache } from "./cache/dns.js";
 import { IPV4Cache } from "./cache/ipv4.js";
@@ -43,11 +42,13 @@ export const domain = async (fqdn: string) => {
   if (rdapServer) {
     const requestUrl = `${rdapServer}/domain/${fqdn}`;
     try {
-      return await got(requestUrl, {
-        headers: {
-          accept: "application/json,application/rdap+json",
-        },
-      }).json<RdapDomainResponse>();
+      return (await (
+        await fetch(requestUrl, {
+          headers: {
+            accept: "application/json,application/rdap+json",
+          },
+        })
+      ).json()) as RdapDomainResponse;
     } catch (e) {
       return null;
     }
@@ -68,11 +69,13 @@ export const ip = async (ip: string) => {
 
   if (rdapServer) {
     const requestUrl = `${rdapServer}/ip/${ip}`;
-    return await got(requestUrl, {
-      headers: {
-        accept: "application/json,application/rdap+json",
-      },
-    }).json<RdapIpResponse>();
+    return (await (
+      await fetch(requestUrl, {
+        headers: {
+          accept: "application/json,application/rdap+json",
+        },
+      })
+    ).json()) as RdapIpResponse;
   }
   return null;
 };
@@ -87,11 +90,13 @@ export const autnum = async (autnum: number) => {
 
   if (rdapServer) {
     const requestUrl = `${rdapServer}/autnum/${autnum}`;
-    return await got(requestUrl, {
-      headers: {
-        accept: "application/json,application/rdap+json",
-      },
-    }).json<RdapAutnumResponse>();
+    return (await (
+      await fetch(requestUrl, {
+        headers: {
+          accept: "application/json,application/rdap+json",
+        },
+      })
+    ).json()) as RdapAutnumResponse;
   }
   return null;
 };

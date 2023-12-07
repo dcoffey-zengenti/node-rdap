@@ -1,3 +1,8 @@
+# 0.4.0
+
+Replace got with native fetch.
+Node 18 or higher now required.
+
 # 0.3.6
 
 Fixed accept header being limited to just `application/json`. `application/rdap+json` is now also allowed.
