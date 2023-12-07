@@ -1,3 +1,7 @@
+# 0.4.1
+
+Dependency updates - Typescript, typescript-eslint and various typings packages.
+
 # 0.4.0
 
 Replace got with native fetch.
