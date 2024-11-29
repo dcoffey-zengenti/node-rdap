@@ -7,6 +7,11 @@ import {
   RdapDomainResponse,
   RdapIpResponse,
 } from "./types.js";
+export {
+  RdapAutnumResponse,
+  RdapDomainResponse,
+  RdapIpResponse,
+} from "./types.js";
 import {
   getTopLevelDomain,
   isFullyQualifiedDomainName,

@@ -1,3 +1,9 @@
+# 0.4.2
+
+Dependency updates - @types/jest, @types/punycode, ts-node, ts-jest, typescript, commander, @typescript-eslint/eslint-plugin, @typescript-eslint/parser, eslint, rimraf
+
+Exported types from entry file.
+
 # 0.4.1
 
 Dependency updates - Typescript, typescript-eslint and various typings packages.
