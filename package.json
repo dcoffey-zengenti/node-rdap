@@ -27,8 +27,8 @@
     "clean": "rimraf dist build package",
     "cli": "node dist/tsc/cli.js",
     "build": "tsc -p tsconfig.json",
-    "build:cli": "yarn build && yarn cli",
-    "build-all": "yarn clean && yarn build"
+    "build:cli": "pnpm build && pnpm cli",
+    "build-all": "pnpm clean && pnpm build"
   },
   "devDependencies": {
     "@biomejs/biome": "2.0.6",
