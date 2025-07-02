@@ -22,10 +22,9 @@
     "dns lookup"
   ],
   "scripts": {
-    "lint": "eslint src/ --ext .js,.jsx,.ts,.tsx",
-    "test": "jest",
+    "lint": "biome lint src",
+    "test": "vitest",
     "clean": "rimraf dist build package",
-    "ts-node": "ts-node",
     "cli": "node dist/tsc/cli.js",
     "build": "tsc -p tsconfig.json",
     "build:cli": "yarn build && yarn cli",
@@ -35,11 +34,7 @@
     "@biomejs/biome": "2.0.6",
     "@types/node": "20.10.4",
     "@types/punycode": "2.1.4",
-    "@typescript-eslint/eslint-plugin": "8.16.0",
-    "@typescript-eslint/parser": "8.16.0",
-    "eslint": "9.15.0",
     "rimraf": "6.0.1",
-    "ts-node": "10.9.2",
     "typescript": "5.8.3",
     "vitest": "^3.2.4"
   },

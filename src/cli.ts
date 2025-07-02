@@ -12,7 +12,7 @@ const doCommand = async <T, R>(fn: (arg: T) => Promise<R>, arg: T) => {
 	}
 };
 
-const parseArgInt = (value) => {
+const parseArgInt = (value: string) => {
 	// parseInt takes a string and a radix
 	const parsedValue = parseInt(value, 10);
 	if (Number.isNaN(parsedValue)) {
