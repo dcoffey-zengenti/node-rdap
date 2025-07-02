@@ -1,17 +1,12 @@
 import { ip } from "../client.js";
-import type { RdapIpResponse } from "../types.js";
 
 describe("client querying an IP address", () => {
   test("should return json for valid IPv4 address", async () => {
-    let result: RdapIpResponse | null = null;
-    result = await ip("8.8.8.8");
-    expect(result).not.toBeNull();
+    await expect(ip("8.8.8.8")).resolves.toBeDefined();
   });
 
   test("should return json for valid IPv6 address", async () => {
-    let result: RdapIpResponse | null = null;
-    result = await ip("2001:4860:4860::8888");
-    expect(result).not.toBeNull();
+    await expect(ip("2001:4860:4860::8888")).resolves.toBeDefined();
   });
 
   test("should throw error for invalid IP address", async () => {

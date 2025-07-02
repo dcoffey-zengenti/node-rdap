@@ -1,11 +1,8 @@
 import { autnum } from "../client.js";
-import type { RdapAutnumResponse } from "../types.js";
 
 describe("client querying an Autonomous System Number (ASN)", () => {
   test("should return json for valid ASN", async () => {
-    let result: RdapAutnumResponse | null = null;
-    result = await autnum(15169); // Google ASN
-    expect(result).not.toBeNull();
+    await expect(autnum(15169)).resolves.toBeDefined()
   });
 
   test("should throw error for invalid ASN", async () => {
