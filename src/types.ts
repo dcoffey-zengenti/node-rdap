@@ -88,10 +88,19 @@ export type RdapObjectClass =
   | RdapNameserverObjectClass
   | RdapDomainObjectClass;
 
+type VCardNestedValue = string[] | VCardNestedValue[];
+type VCardValue = string | number | boolean | VCardNestedValue[];
+type VCardProperty = [
+  string,
+  { [key: string]: string },
+  string,
+  VCardValue 
+];
+
 interface RdapEntityObjectClass {
   objectClassName: "entity";
   handle?: string;
-  vcardArray?: any[];
+  vcardArray?: ['vcard', VCardProperty[]];
   roles?: string[];
   publicIds?: RdapPublicID[];
   entities?: RdapEntityObjectClass[];

@@ -2,7 +2,7 @@ import { isFullyQualifiedDomainName } from "../domain";
 
 describe("isFullyQualifieidDomainName", () => {
   test("should return true for valid FQDN", () => {
-    let isFQDN;
+    let isFQDN: boolean;
     isFQDN = isFullyQualifiedDomainName("insytful.com");
     expect(isFQDN).toBe(true);
     isFQDN = isFullyQualifiedDomainName("insytful.co.uk");
@@ -12,7 +12,7 @@ describe("isFullyQualifieidDomainName", () => {
   });
 
   test("should return false for invalid FQDN", () => {
-    let isFQDN;
+    let isFQDN: boolean;
     isFQDN = isFullyQualifiedDomainName("insytful");
     expect(isFQDN).toBe(false);
     isFQDN = isFullyQualifiedDomainName("https://www.insytful.com");

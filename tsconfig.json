@@ -21,7 +21,7 @@
     "importHelpers": false,
     "skipLibCheck": true,
     "outDir": "./dist/tsc/",
-    "types": ["node", "jest"],
+    "types": ["vitest/globals", "node"],
     "lib": ["ESNext", "DOM"]
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],

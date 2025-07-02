@@ -1,107 +1,102 @@
-import { AutnumCache } from "./cache/asn.js";
-import { DNSCache } from "./cache/dns.js";
-import { IPV4Cache } from "./cache/ipv4.js";
-import { IPV6Cache } from "./cache/ipv6.js";
-import {
-  RdapAutnumResponse,
-  RdapDomainResponse,
-  RdapIpResponse,
-} from "./types.js";
-export {
-  RdapAutnumResponse,
-  RdapDomainResponse,
-  RdapIpResponse,
+import { autnumCache, dnsCache, ipv4Cache, ipv6Cache } from "./cache/index.js";
+import type {
+	RdapAutnumResponse,
+	RdapDomainResponse,
+	RdapIpResponse,
 } from "./types.js";
 import {
-  getTopLevelDomain,
-  isFullyQualifiedDomainName,
+	getTopLevelDomain,
+	isFullyQualifiedDomainName,
 } from "./utils/domain.js";
 
-const dnsCache = new DNSCache();
-const ipv4Cache = new IPV4Cache();
-const ipv6Cache = new IPV6Cache();
-const autnumCache = new AutnumCache();
+//Re-exported so they can be imported from the library directly.
+export {
+	RdapAutnumResponse,
+	RdapDomainResponse,
+	RdapIpResponse,
+} from "./types.js";
 
 const resolveRdapServerByDomain = async (domain: string) => {
-  const topLevelDomain = getTopLevelDomain(domain);
-  if (!topLevelDomain) {
-    throw new Error("Could not parse the top level domain.");
-  }
+	const topLevelDomain = getTopLevelDomain(domain);
+	if (!topLevelDomain) {
+		throw new Error("Could not parse the top level domain.");
+	}
 
-  const rdapServer = await dnsCache.get(topLevelDomain);
-  if (!rdapServer) {
-    throw new Error(
-      "RDAP Server for the given top level domain could not be found."
-    );
-  }
+	const rdapServer = await dnsCache.get(topLevelDomain);
+	if (!rdapServer) {
+		throw new Error(
+			"RDAP Server for the given top level domain could not be found.",
+		);
+	}
 
-  return rdapServer;
+	return rdapServer;
 };
 
-export const domain = async (fqdn: string) => {
-  if (!isFullyQualifiedDomainName(fqdn)) {
-    throw new Error("The given domain could not be validated.");
-  }
-  const rdapServer = await resolveRdapServerByDomain(fqdn);
+export const domain = async (fqdn: string): Promise<RdapDomainResponse> => {
+	const normalizedFqdn = fqdn.trim().toLowerCase();
+	if (!isFullyQualifiedDomainName(normalizedFqdn)) {
+		throw new Error("The given domain could not be validated.");
+	}
 
-  if (rdapServer) {
-    const requestUrl = `${rdapServer}/domain/${fqdn}`;
-    try {
-      return (await (
-        await fetch(requestUrl, {
-          headers: {
-            accept: "application/json,application/rdap+json",
-          },
-        })
-      ).json()) as RdapDomainResponse;
-    } catch (e) {
-      return null;
-    }
-  }
-  return null;
+	try {
+		const rdapServer = await resolveRdapServerByDomain(normalizedFqdn);
+		const requestUrl = `${rdapServer}/domain/${normalizedFqdn}`;
+		const response = await fetch(requestUrl, {
+			headers: {
+				accept: "application/json,application/rdap+json",
+			},
+		});
+
+		if (!response.ok) {
+			throw new Error(
+				`RDAP server responded with status ${response.status}: ${response.statusText}`,
+			);
+		}
+
+		const data = (await response.json()) as RdapDomainResponse;
+		return data;
+	} catch (error) {
+		throw new Error(
+			`Failed to fetch RDAP domain data: ${(error as Error).message}`,
+		);
+	}
 };
 
 export const ip = async (ip: string) => {
-  //Todo: Validate IP String.
+	//Todo: Validate IP String.
 
-  const isIpv6 = ip.includes(":");
-  const cache = isIpv6 ? ipv6Cache : ipv4Cache;
+	const isIpv6 = ip.includes(":");
+	const cache = isIpv6 ? ipv6Cache : ipv4Cache;
 
-  const rdapServer = await cache.get(ip);
-  if (!rdapServer) {
-    throw new Error("RDAP Server for the given IP Address could not be found.");
-  }
+	const rdapServer = await cache.get(ip);
+	if (!rdapServer) {
+		throw new Error("RDAP Server for the given IP Address could not be found.");
+	}
 
-  if (rdapServer) {
-    const requestUrl = `${rdapServer}/ip/${ip}`;
-    return (await (
-      await fetch(requestUrl, {
-        headers: {
-          accept: "application/json,application/rdap+json",
-        },
-      })
-    ).json()) as RdapIpResponse;
-  }
-  return null;
+	const requestUrl = `${rdapServer}/ip/${ip}`;
+	return (await (
+		await fetch(requestUrl, {
+			headers: {
+				accept: "application/json,application/rdap+json",
+			},
+		})
+	).json()) as RdapIpResponse;
 };
 
 export const autnum = async (autnum: number) => {
-  const rdapServer = await autnumCache.get(autnum);
-  if (!rdapServer) {
-    throw new Error(
-      "RDAP Server for the given Autonomous System Number could not be found."
-    );
-  }
+	const rdapServer = await autnumCache.get(autnum);
+	if (!rdapServer) {
+		throw new Error(
+			"RDAP Server for the given Autonomous System Number could not be found.",
+		);
+	}
 
-  if (rdapServer) {
-    const requestUrl = `${rdapServer}/autnum/${autnum}`;
-    return (await (
-      await fetch(requestUrl, {
-        headers: {
-          accept: "application/json,application/rdap+json",
-        },
-      })
-    ).json()) as RdapAutnumResponse;
-  }
-  return null;
+	const requestUrl = `${rdapServer}/autnum/${autnum}`;
+	return (await (
+		await fetch(requestUrl, {
+			headers: {
+				accept: "application/json,application/rdap+json",
+			},
+		})
+	).json()) as RdapAutnumResponse;
 };

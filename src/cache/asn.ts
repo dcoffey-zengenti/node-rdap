@@ -2,7 +2,7 @@ import NodeCache from "node-cache";
 import { inRange } from "../utils/autnum.js";
 import { fetchASNList } from "../utils/dns.js";
 
-export class AutnumCache {
+class AutnumCache {
   autnumCache: NodeCache;
   rangeCache: NodeCache;
   constructor() {
@@ -64,3 +64,5 @@ export class AutnumCache {
     this.rangeCache.flushAll();
   }
 }
+
+export const autnumCache = new AutnumCache();
