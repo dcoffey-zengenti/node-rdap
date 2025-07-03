@@ -1,3 +1,13 @@
+# 0.5.0
+
+Moved from yarn to pnpm
+Moved from eslint to biome
+Moved from jest to vitest
+Changed where caches are instantiated to keep concerns seperate.
+Dependency updates - @types/node, commander
+Punycode replaced with an ES6/typescript version.
+Node 20 or higher now required.
+
 # 0.4.2
 
 Dependency updates - @types/jest, @types/punycode, ts-node, ts-jest, typescript, commander, @typescript-eslint/eslint-plugin, @typescript-eslint/parser, eslint, rimraf

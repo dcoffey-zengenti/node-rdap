@@ -1,4 +1,4 @@
-import { toASCII as punycode } from "punycode/";
+import { toASCII as punycode } from "@dcoffey-zengenti/punynode";
 
 export const getTopLevelDomain = (domain: string) => {
   const parts = domain.split(".");

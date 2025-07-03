@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@dcoffey-zengenti/punynode':
+        specifier: ^0.1.0
+        version: 0.1.0
       commander:
         specifier: 14.0.0
         version: 14.0.0
@@ -17,9 +20,6 @@ importers:
       node-cache:
         specifier: ^5.1.2
         version: 5.1.2
-      punycode:
-        specifier: 2.3.1
-        version: 2.3.1
     devDependencies:
       '@biomejs/biome':
         specifier: 2.0.6
@@ -27,9 +27,6 @@ importers:
       '@types/node':
         specifier: 22.13.1
         version: 22.13.1
-      '@types/punycode':
-        specifier: 2.1.4
-        version: 2.1.4
       rimraf:
         specifier: 6.0.1
         version: 6.0.1
@@ -94,6 +91,10 @@ packages:
     engines: {node: '>=14.21.3'}
     cpu: [x64]
     os: [win32]
+
+  '@dcoffey-zengenti/punynode@0.1.0':
+    resolution: {integrity: sha512-qjaxLEAKFn1Di9wb7UMT19ctxKnituHKwG//uQgWJBXk6gcwUeEW1mqp/oy5WCcIGMJj0ygGT64r8pN3kUJIsg==}
+    engines: {node: '>=20.19.0 || >=22.12.0'}
 
   '@esbuild/aix-ppc64@0.25.5':
     resolution: {integrity: sha512-9o3TMmpmftaCMepOdA5k/yDw8SfInyzWWTjYTFCX3kPSDJMROQTb8jg+h9Cnwnmm1vOzvxN7gIfB5V2ewpjtGA==}
@@ -372,9 +373,6 @@ packages:
   '@types/node@22.13.1':
     resolution: {integrity: sha512-jK8uzQlrvXqEU91UxiK5J7pKHyzgnI1Qnl0QDHIgVGuolJhRb9EEl28Cj9b3rGR8B2lhFCtvIm5os8lFnO/1Ew==}
 
-  '@types/punycode@2.1.4':
-    resolution: {integrity: sha512-trzh6NzBnq8yw5e35f8xe8VTYjqM3NE7bohBtvDVf/dtUer3zYTLK1Ka3DG3p7bdtoaOHZucma6FfVKlQ134pQ==}
-
   '@vitest/expect@3.2.4':
     resolution: {integrity: sha512-Io0yyORnB6sikFlt8QW5K7slY4OjqNX9jmJQ02QDda8lyM6B5oNgVWoSoKPac8/kgnCUzuHQKrSLtu/uOqqrig==}
 
@@ -590,10 +588,6 @@ packages:
     resolution: {integrity: sha512-3Ybi1tAuwAP9s0r1UQ2J4n5Y0G05bJkpUIO0/bI9MhwmD70S5aTWbXGBwxHrelT+XM1k6dM0pk+SwNkpTRN7Pg==}
     engines: {node: ^10 || ^12 || >=14}
 
-  punycode@2.3.1:
-    resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
-    engines: {node: '>=6'}
-
   rimraf@6.0.1:
     resolution: {integrity: sha512-9dkvaxAsk/xNXSJzMgFqqMCuFgt2+KsOFek3TMLfo8NCPfWpBmqwyNn5Y+NX56QUYfCtsyhF3ayiboEoUmJk/A==}
     engines: {node: 20 || >=22}
@@ -806,6 +800,8 @@ snapshots:
   '@biomejs/cli-win32-x64@2.0.6':
     optional: true
 
+  '@dcoffey-zengenti/punynode@0.1.0': {}
+
   '@esbuild/aix-ppc64@0.25.5':
     optional: true
 
@@ -969,8 +965,6 @@ snapshots:
   '@types/node@22.13.1':
     dependencies:
       undici-types: 6.20.0
-
-  '@types/punycode@2.1.4': {}
 
   '@vitest/expect@3.2.4':
     dependencies:
@@ -1179,8 +1173,6 @@ snapshots:
       nanoid: 3.3.11
       picocolors: 1.1.1
       source-map-js: 1.2.1
-
-  punycode@2.3.1: {}
 
   rimraf@6.0.1:
     dependencies:

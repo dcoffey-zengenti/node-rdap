@@ -33,16 +33,15 @@
   "devDependencies": {
     "@biomejs/biome": "2.0.6",
     "@types/node": "22.13.1",
-    "@types/punycode": "2.1.4",
     "rimraf": "6.0.1",
     "typescript": "5.8.3",
     "vitest": "^3.2.4"
   },
   "dependencies": {
+    "@dcoffey-zengenti/punynode": "^0.1.0",
     "commander": "14.0.0",
     "ip-matching": "^2.1.2",
-    "node-cache": "^5.1.2",
-    "punycode": "2.3.1"
+    "node-cache": "^5.1.2"
   },
   "engines": {
     "node": ">=20.19.0 || >=22.12.0"
