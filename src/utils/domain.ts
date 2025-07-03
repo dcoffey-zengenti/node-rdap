@@ -8,6 +8,8 @@ export const getTopLevelDomain = (domain: string) => {
 };
 
 export const isFullyQualifiedDomainName = (str: string) => {
+  if(str.length > 255) return false;
+  
   const parts = str.split(".");
   const topLevelDomain = parts[parts.length - 1];
 
@@ -19,14 +21,6 @@ export const isFullyQualifiedDomainName = (str: string) => {
     )
   )
     return false;
-
-  if (/\s/.test(topLevelDomain)) {
-    return false;
-  }
-
-  if (/^\d+$/.test(topLevelDomain)) {
-    return false;
-  }
 
   return parts.every((part) => {
     if (part.length > 63) {

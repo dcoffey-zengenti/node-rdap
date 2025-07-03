@@ -24,12 +24,19 @@ describe("client querying a domain", () => {
 		);
 	});
 
-	test("should return null for non-existant domain", async () => {
+	test("should return error for non-existant domain", async () => {
 		await expect(domain("insytful-contensis-party-time.com")).rejects.toThrow(
 			"Failed to fetch RDAP domain data",
 		);
 		await expect(domain("insytful-contensis-party-time.co.uk")).rejects.toThrow(
 			"Failed to fetch RDAP domain data",
 		);
+	});
+
+	test('should return error for invalid FQDN', async () => {
+		await expect(domain("insytful")).rejects.toThrow(
+			"The given domain could not be validated.",
+		);
+		
 	});
 });

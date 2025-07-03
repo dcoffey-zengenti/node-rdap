@@ -17,4 +17,8 @@ describe("client querying an IP address", () => {
       "The given value is not a valid IP"
     );
   });
+
+  test('should throw error if an RDAP server cannot be found for an IP Address', async () => {
+    await expect(ip('127.0.0.1')).rejects.toThrow('RDAP Server for the given IP Address could not be found.');
+  });
 });

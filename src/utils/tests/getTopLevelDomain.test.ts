@@ -10,4 +10,14 @@ describe("getTopLevelDomain", () => {
     const tld = getTopLevelDomain("insytful.集团");
     expect(tld).toBe("xn--3bst00m");
   });
+
+  test("returns null for empty input", () => {
+    const tld = getTopLevelDomain('');
+    expect(tld).toBeNull();
+  })
+
+  test("works on input that is already a TLD", () => {
+    const tld = getTopLevelDomain('com');
+    expect(tld).toBe('com');
+  })
 });

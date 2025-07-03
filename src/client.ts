@@ -16,22 +16,6 @@ export {
 	RdapIpResponse,
 } from "./types.js";
 
-const resolveRdapServerByDomain = async (domain: string) => {
-	const topLevelDomain = getTopLevelDomain(domain);
-	if (!topLevelDomain) {
-		throw new Error("Could not parse the top level domain.");
-	}
-
-	const rdapServer = await dnsCache.get(topLevelDomain);
-	if (!rdapServer) {
-		throw new Error(
-			"RDAP Server for the given top level domain could not be found.",
-		);
-	}
-
-	return rdapServer;
-};
-
 export const domain = async (fqdn: string): Promise<RdapDomainResponse> => {
 	const normalizedFqdn = fqdn.trim().toLowerCase();
 	if (!isFullyQualifiedDomainName(normalizedFqdn)) {
@@ -39,7 +23,15 @@ export const domain = async (fqdn: string): Promise<RdapDomainResponse> => {
 	}
 
 	try {
-		const rdapServer = await resolveRdapServerByDomain(normalizedFqdn);
+		// Since we already did isFullyQualifiedDomainName above, we don't need to check for null here.
+		const topLevelDomain = getTopLevelDomain(normalizedFqdn)!;
+
+		const rdapServer = await dnsCache.get(topLevelDomain);
+		if (!rdapServer) {
+			throw new Error(
+				"RDAP Server for the given top level domain could not be found.",
+			);
+		}
 		const requestUrl = `${rdapServer}/domain/${normalizedFqdn}`;
 		const response = await fetch(requestUrl, {
 			headers: {
