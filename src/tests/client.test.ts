@@ -1,6 +1,11 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { autnumCache, dnsCache, ipv4Cache, ipv6Cache } from "../cache/index.js";
 import { autnum, domain, ip } from "../client.js";
+import {
+	RdapRegistryError,
+	RdapServerNotFoundError,
+	RdapValidationError,
+} from "../errors.js";
 
 vi.mock("../cache/index.js", () => ({
 	dnsCache: { get: vi.fn() },
@@ -36,8 +41,9 @@ describe("client", () => {
 
 	describe("domain", () => {
 		test("rejects an invalid FQDN without touching the network", async () => {
+			await expect(domain("example")).rejects.toThrow(RdapValidationError);
 			await expect(domain("example")).rejects.toThrow(
-				"The given domain could not be validated.",
+				'"example" is not a valid fully qualified domain name.',
 			);
 			expect(fetchMock).not.toHaveBeenCalled();
 		});
@@ -46,7 +52,10 @@ describe("client", () => {
 			vi.mocked(dnsCache.get).mockResolvedValue(null);
 
 			await expect(domain("example.com")).rejects.toThrow(
-				"Failed to fetch RDAP domain data: RDAP Server for the given top level domain could not be found.",
+				RdapServerNotFoundError,
+			);
+			await expect(domain("example.com")).rejects.toThrow(
+				'No RDAP server is published for the top level domain "com".',
 			);
 		});
 
@@ -56,6 +65,7 @@ describe("client", () => {
 				response({}, { ok: false, status: 404, statusText: "Not Found" }),
 			);
 
+			await expect(domain("example.com")).rejects.toThrow(RdapRegistryError);
 			await expect(domain("example.com")).rejects.toThrow(
 				"RDAP server responded with status 404: Not Found",
 			);
@@ -113,11 +123,30 @@ describe("client", () => {
 			expect(ipv4Cache.get).not.toHaveBeenCalled();
 		});
 
+		test("throws when the registry answers with an error status", async () => {
+			// ip() used to skip the response.ok check entirely and hand back the
+			// RDAP error body typed as a success.
+			vi.mocked(ipv4Cache.get).mockResolvedValue("https://rdap.test");
+			fetchMock.mockResolvedValue(
+				response(
+					{ errorCode: 404, title: "Not Found" },
+					{ ok: false, status: 404, statusText: "Not Found" },
+				),
+			);
+
+			await expect(ip("8.8.8.8")).rejects.toThrow(RdapRegistryError);
+			await expect(ip("8.8.8.8")).rejects.toMatchObject({
+				status: 404,
+				body: { errorCode: 404 },
+			});
+		});
+
 		test("throws when no RDAP server is known for the address", async () => {
 			vi.mocked(ipv4Cache.get).mockResolvedValue(null);
 
+			await expect(ip("8.8.8.8")).rejects.toThrow(RdapServerNotFoundError);
 			await expect(ip("8.8.8.8")).rejects.toThrow(
-				"RDAP Server for the given IP Address could not be found.",
+				'No RDAP server is published for the IP address "8.8.8.8".',
 			);
 			expect(fetchMock).not.toHaveBeenCalled();
 		});
@@ -137,11 +166,25 @@ describe("client", () => {
 			);
 		});
 
+		test("throws when the registry answers with an error status", async () => {
+			// Same gap as ip(): autnum() never checked response.ok either.
+			vi.mocked(autnumCache.get).mockResolvedValue("https://rdap.test");
+			fetchMock.mockResolvedValue(
+				response({}, { ok: false, status: 503, statusText: "Service Unavailable" }),
+			);
+
+			await expect(autnum(15169)).rejects.toThrow(RdapRegistryError);
+			await expect(autnum(15169)).rejects.toMatchObject({ status: 503 });
+		});
+
 		test("throws when no RDAP server is known for the number", async () => {
 			vi.mocked(autnumCache.get).mockResolvedValue(null);
 
 			await expect(autnum(999999999)).rejects.toThrow(
-				"RDAP Server for the given Autonomous System Number could not be found.",
+				RdapServerNotFoundError,
+			);
+			await expect(autnum(999999999)).rejects.toThrow(
+				"No RDAP server is published for AS999999999.",
 			);
 			expect(fetchMock).not.toHaveBeenCalled();
 		});

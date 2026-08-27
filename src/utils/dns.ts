@@ -1,3 +1,5 @@
+import { requestJson } from "./request.js";
+
 export interface DNSList {
   description: string;
   publication: string;
@@ -5,14 +7,8 @@ export interface DNSList {
   version: string;
 }
 
-const fetchList = async (url: string): Promise<DNSList> => {
-  const response = await fetch(url, {
-    headers: {
-      accept: "application/json,application/rdap+json",
-    },
-  });
-  return response.json();
-};
+const fetchList = async (url: string): Promise<DNSList> =>
+  requestJson<DNSList>(url);
 
 export const fetchDNSList = async () => {
   return fetchList("https://data.iana.org/rdap/dns.json");

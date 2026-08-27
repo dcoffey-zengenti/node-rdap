@@ -1,4 +1,4 @@
-interface RdapLink {
+export interface RdapLink {
   value: string;
   rel: string;
   href: string;
@@ -8,19 +8,19 @@ interface RdapLink {
   title?: string;
 }
 
-interface RdapEvent {
+export interface RdapEvent {
   eventAction: string;
   eventActor?: string;
   eventDate: string;
   links?: RdapLink[];
 }
 
-interface RdapPublicID {
+export interface RdapPublicID {
   type: string;
   identifier: string;
 }
 
-type RdapStatus =
+export type RdapStatus =
   | "validated"
   | "renew prohibited"
   | "update prohibited"
@@ -40,7 +40,7 @@ type RdapStatus =
   | "pending update"
   | "pending delete";
 
-type RdapNoticeAndRemarkTypes =
+export type RdapNoticeAndRemarkTypes =
   | "result set truncated due to authorization"
   | "result set truncated due to excessive load"
   | "result set truncated due to unexplainable reasons"
@@ -48,14 +48,14 @@ type RdapNoticeAndRemarkTypes =
   | "object truncated due to excessive load"
   | "object truncated due to unexplainable reasons";
 
-interface RdapRemark {
+export interface RdapRemark {
   title?: string;
   type?: RdapNoticeAndRemarkTypes;
   description: string[];
   links?: RdapLink[];
 }
 
-interface RdapDsData {
+export interface RdapDsData {
   keyTag?: number;
   algorithm?: number;
   digest?: string;
@@ -64,7 +64,7 @@ interface RdapDsData {
   links?: RdapLink[];
 }
 
-interface RdapKeyData {
+export interface RdapKeyData {
   flags?: number;
   protocol?: number;
   publicKey?: string;
@@ -73,7 +73,7 @@ interface RdapKeyData {
   links?: RdapLink[];
 }
 
-interface RdapSecureDNS {
+export interface RdapSecureDNS {
   zoneSigned?: boolean;
   delegationSigned?: boolean;
   maxSigLife?: number;
@@ -81,23 +81,23 @@ interface RdapSecureDNS {
   keyData?: RdapKeyData[];
 }
 
-type RdapNotice = RdapRemark;
+export type RdapNotice = RdapRemark;
 
 export type RdapObjectClass =
   | RdapEntityObjectClass
   | RdapNameserverObjectClass
   | RdapDomainObjectClass;
 
-type VCardNestedValue = string[] | VCardNestedValue[];
-type VCardValue = string | number | boolean | VCardNestedValue[];
-type VCardProperty = [
+export type VCardNestedValue = string[] | VCardNestedValue[];
+export type VCardValue = string | number | boolean | VCardNestedValue[];
+export type VCardProperty = [
   string,
   { [key: string]: string },
   string,
   VCardValue 
 ];
 
-interface RdapEntityObjectClass {
+export interface RdapEntityObjectClass {
   objectClassName: "entity";
   handle?: string;
   vcardArray?: ['vcard', VCardProperty[]];
@@ -114,7 +114,7 @@ interface RdapEntityObjectClass {
   autnums?: RdapAutonomousSystemNumberObjectClass[];
 }
 
-interface RdapNameserverObjectClass {
+export interface RdapNameserverObjectClass {
   objectClassName: "nameserver";
   handle?: string;
   ldhName?: string;
@@ -131,12 +131,12 @@ interface RdapNameserverObjectClass {
   events?: RdapEvent[];
 }
 
-interface RdapDomainObjectClass {
+export interface RdapDomainObjectClass {
   objectClassName: "domain";
   handle?: string;
   ldhName?: string;
   unicodeName?: string;
-  variants: {
+  variants?: {
     relation: string[];
     idnTable: string;
     variantName: {
@@ -144,19 +144,19 @@ interface RdapDomainObjectClass {
       unicodeName: string;
     }[];
   }[];
-  nameservers: RdapNameserverObjectClass[];
-  secureDNS: RdapSecureDNS;
+  nameservers?: RdapNameserverObjectClass[];
+  secureDNS?: RdapSecureDNS;
   entities?: RdapEntityObjectClass[];
   status?: RdapStatus[];
   publicIds?: RdapPublicID[];
-  remarks: RdapRemark[];
+  remarks?: RdapRemark[];
   links?: RdapLink[];
   port43?: string;
   events?: RdapEvent[];
   network?: RdapIPNetworkObjectClass;
 }
 
-interface RdapIPNetworkObjectClass {
+export interface RdapIPNetworkObjectClass {
   objectClassName: "ip network";
   handle?: string;
   startAddress?: string;
@@ -168,13 +168,13 @@ interface RdapIPNetworkObjectClass {
   parentHandle?: string;
   status?: RdapStatus[];
   entities?: RdapEntityObjectClass[];
-  remarks: RdapRemark[];
+  remarks?: RdapRemark[];
   links?: RdapLink[];
   port43?: string;
   events?: RdapEvent[];
 }
 
-interface RdapAutonomousSystemNumberObjectClass {
+export interface RdapAutonomousSystemNumberObjectClass {
   objectClassName: "autnum";
   handle?: string;
   startAutnum?: string;
@@ -184,37 +184,45 @@ interface RdapAutonomousSystemNumberObjectClass {
   status?: RdapStatus[];
   country?: string;
   entities?: RdapEntityObjectClass[];
-  remarks: RdapRemark[];
+  remarks?: RdapRemark[];
   links?: RdapLink[];
   port43?: string;
   events?: RdapEvent[];
 }
 
-interface RdapDomainSuccessResponse extends RdapDomainObjectClass {
+export interface RdapDomainSuccessResponse extends RdapDomainObjectClass {
   rdapConformance: string[];
 }
 
-interface RdapIpSuccessResponse extends RdapIPNetworkObjectClass {
+export interface RdapIpSuccessResponse extends RdapIPNetworkObjectClass {
   rdapConformance: string[];
 }
 
-interface RdapAutnumSuccessResponse
+export interface RdapAutnumSuccessResponse
   extends RdapAutonomousSystemNumberObjectClass {
   rdapConformance: string[];
 }
 
-interface RdapHelpSuccessResponse {
+export interface RdapHelpSuccessResponse {
   rdapConformance: string[];
   notices?: RdapNotice[];
 }
 
-interface RdapErrorResponse {
+export interface RdapErrorResponse {
   errorCode: number;
   title?: string;
   description?: string[];
 }
 
-export type RdapDomainResponse = RdapErrorResponse & RdapDomainSuccessResponse;
-export type RdapIpResponse = RdapErrorResponse & RdapIpSuccessResponse;
-export type RdapAutnumResponse = RdapErrorResponse & RdapAutnumSuccessResponse;
-export type RdapHelpResponse = RdapErrorResponse & RdapHelpSuccessResponse;
+/*
+ * A lookup resolves with a success response or throws, so these describe
+ * success only. They used to be intersections with RdapErrorResponse, which
+ * claimed every response carried a required `errorCode` as well as its own
+ * fields — true of neither a success nor an error.
+ *
+ * An error body from a registry is on RdapRegistryError#body instead.
+ */
+export type RdapDomainResponse = RdapDomainSuccessResponse;
+export type RdapIpResponse = RdapIpSuccessResponse;
+export type RdapAutnumResponse = RdapAutnumSuccessResponse;
+export type RdapHelpResponse = RdapHelpSuccessResponse;

@@ -1,3 +1,18 @@
+# 1.0.0-rc.1
+
+Breaking. This is the release that corrects the public API before it is frozen for 1.0.0.
+
+Lookups now throw typed errors instead of plain `Error`s with assembled messages. `RdapValidationError`, `RdapServerNotFoundError`, `RdapRegistryError` and `RdapNetworkError` all extend `RdapError`, so you can catch the base class for any failure or a subclass to tell them apart. The underlying failure is kept on `cause` rather than flattened into the message, and `RdapRegistryError` carries the status and the parsed RDAP error body.
+`domain()` no longer wraps everything it does in one try/catch. It used to report "no server for this tld", "the registry said 404" and "the network is down" with the same opaque string, and it re-wrapped errors it had raised itself.
+`ip()` and `autnum()` now check the response status. Previously neither did, so an RDAP error body came back as if it were a successful lookup.
+`ip()` validates the address before doing any work, using Node's own parser. It used to fail part way through a mask scan with wording borrowed from `ip-matching`, such as "Value has to be in the range of 0-255". It also no longer decides between IPv4 and IPv6 by looking for a colon.
+`autnum()` rejects negative and fractional numbers as invalid rather than reporting them as having no registry.
+Response types describe success only. They were intersections with the error response, which claimed every response carried a required `errorCode` alongside its own fields — true of neither a success nor an error.
+Fields that registries routinely omit are now optional. `variants`, `nameservers`, `secureDNS` and `remarks` were all declared as required, so `result.remarks.map(...)` typechecked and then threw at runtime.
+Every type reachable from the public API is now exported, so consumers can name the things they are given.
+The CLI exits non-zero when a lookup fails. It always exited 0, so no script or CI step could detect a failure. Interactive mode is unchanged: a bad command is reported and the session carries on.
+Both hops of a lookup, the IANA bootstrap fetch and the registry request, now go through the same code and fail the same way.
+
 # 0.6.0
 
 The CLI is now installable. `npm install -g node-rdap` puts a `node-rdap` command on your path, and `npx node-rdap` works. Previously the CLI was built and published but had no `bin` entry, so there was no way to run it short of naming the file inside `node_modules`.

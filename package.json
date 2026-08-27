@@ -1,6 +1,6 @@
 {
   "name": "node-rdap",
-  "version": "0.6.0",
+  "version": "1.0.0-rc.1",
   "description": "RDAP client and CLI for domain, IP and ASN lookups in Node.js",
   "type": "module",
   "main": "./dist/tsc/client.js",

@@ -9,18 +9,28 @@ import { autnum, domain, ip } from "../client.js";
  * compiled entry point lives at dist/tsc/cli.js, so a relative import of
  * package.json would need a different path in source than in build output.
  */
-export const VERSION = "0.6.0";
+export const VERSION = "1.0.0-rc.1";
 
 /**
  * This is a helper to write the output or error of a function to the console
  * @param fn - The function to try to run
  * @param arg - Argument to pass to the function
+ * @param setExitCode - Whether a failure should mark the process as failed.
+ * False in interactive mode, where one bad command should not condemn the
+ * whole session.
  */
-export const doCommand = async <T, R>(fn: (arg: T) => Promise<R>, arg: T) => {
+export const doCommand = async <T, R>(
+	fn: (arg: T) => Promise<R>,
+	arg: T,
+	setExitCode = true,
+) => {
 	try {
 		console.log(await fn(arg));
 	} catch (e) {
-		console.error((e as Error).toString());
+		console.error((e as Error).message);
+		// process.exitCode rather than process.exit, so buffered stdout still
+		// flushes before the process ends.
+		if (setExitCode) process.exitCode = 1;
 	}
 };
 
@@ -45,7 +55,7 @@ export const parseArgInt = (value: string): number => {
  * A new instance is returned each call rather than commander's shared `program`
  * singleton, so that parsing in one test cannot leak into the next.
  */
-export const createProgram = (): Command => {
+export const createProgram = ({ setExitCode = true } = {}): Command => {
 	const program = new Command();
 
 	program
@@ -59,7 +69,7 @@ export const createProgram = (): Command => {
 		.description("Lookup a domains whois info via RDAP")
 		.argument("<domain>", "The domain to lookup")
 		.usage("mydomain.com")
-		.action(async (arg: string) => doCommand(domain, arg));
+		.action(async (arg: string) => doCommand(domain, arg, setExitCode));
 
 	// Register ip command with commander
 	program
@@ -67,7 +77,7 @@ export const createProgram = (): Command => {
 		.description("Lookup a domains whois info via RDAP")
 		.argument("<ip>", "The IP Address to lookup")
 		.usage("1.1.1.1")
-		.action(async (arg: string) => doCommand(ip, arg));
+		.action(async (arg: string) => doCommand(ip, arg, setExitCode));
 
 	// Register autnum command with commander
 	program
@@ -75,7 +85,7 @@ export const createProgram = (): Command => {
 		.description("Lookup a domains whois info via RDAP")
 		.argument("<autnum>", "The Autonomous System Number to lookup", parseArgInt)
 		.usage("1")
-		.action(async (arg: number) => doCommand(autnum, arg));
+		.action(async (arg: number) => doCommand(autnum, arg, setExitCode));
 
 	return program;
 };

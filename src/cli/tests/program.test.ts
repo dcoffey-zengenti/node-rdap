@@ -30,13 +30,22 @@ describe("parseArgInt", () => {
 describe("doCommand", () => {
 	let log: ReturnType<typeof vi.spyOn>;
 	let error: ReturnType<typeof vi.spyOn>;
+	let originalExitCode: typeof process.exitCode;
+
+	const reject = async () => {
+		throw new Error("No RDAP server is published for AS1.");
+	};
 
 	beforeEach(() => {
 		log = vi.spyOn(console, "log").mockImplementation(() => {});
 		error = vi.spyOn(console, "error").mockImplementation(() => {});
+		// doCommand marks the process as failed, which would otherwise leak out
+		// of the test run and fail vitest itself.
+		originalExitCode = process.exitCode;
 	});
 
 	afterEach(() => {
+		process.exitCode = originalExitCode;
 		vi.restoreAllMocks();
 	});
 
@@ -48,14 +57,31 @@ describe("doCommand", () => {
 	});
 
 	test("logs the error instead of throwing when the function rejects", async () => {
-		await expect(
-			doCommand(async () => {
-				throw new Error("RDAP Server could not be found.");
-			}, "example.com"),
-		).resolves.toBeUndefined();
+		await expect(doCommand(reject, "example.com")).resolves.toBeUndefined();
 
-		expect(error).toHaveBeenCalledWith("Error: RDAP Server could not be found.");
+		expect(error).toHaveBeenCalledWith("No RDAP server is published for AS1.");
 		expect(log).not.toHaveBeenCalled();
+	});
+
+	test("marks the process as failed when the function rejects", async () => {
+		await doCommand(reject, "example.com");
+
+		expect(process.exitCode).toBe(1);
+	});
+
+	test("leaves the exit code alone on success", async () => {
+		process.exitCode = 0;
+		await doCommand(async () => ({}), "example.com");
+
+		expect(process.exitCode).toBe(0);
+	});
+
+	test("does not fail the process when setExitCode is false", async () => {
+		process.exitCode = 0;
+		await doCommand(reject, "example.com", false);
+
+		expect(error).toHaveBeenCalled();
+		expect(process.exitCode).toBe(0);
 	});
 });
 

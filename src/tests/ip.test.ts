@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { ipv4Cache, ipv6Cache } from "../cache/index.js";
 import { ip } from "../client.js";
+import {
+	RdapServerNotFoundError,
+	RdapValidationError,
+} from "../errors.js";
 import { installNetworkMock } from "./helpers/network.js";
 
 describe("client querying an IP address", () => {
@@ -23,17 +27,28 @@ describe("client querying an IP address", () => {
 	});
 
 	test("should throw error for invalid IP address", async () => {
+		// Rejected up front by our own validation, rather than part way through
+		// a mask scan with wording borrowed from ip-matching.
+		await expect(ip("999.999.999.999")).rejects.toThrow(RdapValidationError);
 		await expect(ip("999.999.999.999")).rejects.toThrow(
-			"Value has to be in the range of 0-255",
+			'"999.999.999.999" is not a valid IP address.',
 		);
+		await expect(ip("not.an.ip")).rejects.toThrow(RdapValidationError);
 		await expect(ip("not.an.ip")).rejects.toThrow(
-			"The given value is not a valid IP",
+			'"not.an.ip" is not a valid IP address.',
 		);
 	});
 
+	test("should not reach the network for an invalid address", async () => {
+		const fetchMock = installNetworkMock();
+		await expect(ip("not.an.ip")).rejects.toThrow(RdapValidationError);
+		expect(fetchMock).not.toHaveBeenCalled();
+	});
+
 	test("should throw error if an RDAP server cannot be found for an IP Address", async () => {
+		await expect(ip("127.0.0.1")).rejects.toThrow(RdapServerNotFoundError);
 		await expect(ip("127.0.0.1")).rejects.toThrow(
-			"RDAP Server for the given IP Address could not be found.",
+			'No RDAP server is published for the IP address "127.0.0.1".',
 		);
 	});
 });

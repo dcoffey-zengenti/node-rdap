@@ -58,8 +58,36 @@ import type {
 } from "node-rdap";
 ```
 
-A lookup rejects when the domain fails validation, when no RDAP server is
-published for the top level domain, or when the registry returns an error.
+### Errors
+
+A lookup rejects with a typed error. Catch `RdapError` to handle any failure, or
+a subclass to tell them apart:
+
+| Error | Thrown when |
+| --- | --- |
+| `RdapValidationError` | The value is not a well formed domain, IP address or ASN |
+| `RdapServerNotFoundError` | IANA publishes no RDAP server for it |
+| `RdapRegistryError` | The server was reached and answered with an error status |
+| `RdapNetworkError` | The server could not be reached, or its response was not JSON |
+
+```typescript
+import { domain, RdapRegistryError, RdapServerNotFoundError } from "node-rdap";
+
+try {
+  await domain("example.com");
+} catch (error) {
+  if (error instanceof RdapServerNotFoundError) {
+    // Nothing to look up: no registry serves this tld.
+  } else if (error instanceof RdapRegistryError) {
+    console.log(error.status, error.body?.errorCode);
+  } else {
+    throw error;
+  }
+}
+```
+
+The original failure is always kept on `cause` rather than folded into the
+message, so a network failure can still be inspected.
 
 ## Command line
 

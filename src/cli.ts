@@ -18,15 +18,17 @@ export const main = (
 	input: NodeJS.ReadableStream = process.stdin,
 	output: NodeJS.WritableStream = process.stdout,
 ) => {
-	const program = createProgram();
-
-	// If the CLI was called with a command, parse it and return.
+	// If the CLI was called with a command, parse it and return. A failed
+	// lookup marks the process as failed so scripts can detect it.
 	if (argv.length > 2) {
+		const program = createProgram();
 		program.parse(argv);
 		return program;
 	}
 
-	// If the CLI was called without commands, open interactive mode.
+	// If the CLI was called without commands, open interactive mode. A failed
+	// lookup there is reported but does not fail the session.
+	const program = createProgram({ setExitCode: false });
 	startInteractive(program, input, output);
 	return program;
 };
