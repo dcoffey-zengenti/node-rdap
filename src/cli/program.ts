@@ -1,6 +1,7 @@
 import * as readline from "node:readline";
 import { Command, InvalidArgumentError } from "commander";
-import { autnum, domain, ip } from "../client.js";
+import { autnum, domain, entity, ip, nameserver } from "../client.js";
+import { configure } from "../config.js";
 
 /**
  * The version reported by `node-rdap --version`.
@@ -9,7 +10,7 @@ import { autnum, domain, ip } from "../client.js";
  * compiled entry point lives at dist/tsc/cli.js, so a relative import of
  * package.json would need a different path in source than in build output.
  */
-export const VERSION = "1.0.0-rc.1";
+export const VERSION = "1.0.0";
 
 /**
  * This is a helper to write the output or error of a function to the console
@@ -49,6 +50,14 @@ export const parseArgInt = (value: string): number => {
 	return parsedValue;
 };
 
+export const parsePositiveInt = (value: string): number => {
+	const parsedValue = parseArgInt(value);
+	if (parsedValue <= 0) {
+		throw new InvalidArgumentError("Must be greater than zero.");
+	}
+	return parsedValue;
+};
+
 /**
  * Builds a fully configured commander program.
  *
@@ -61,7 +70,21 @@ export const createProgram = ({ setExitCode = true } = {}): Command => {
 	program
 		.name("node-rdap")
 		.description("CLI for querying rdap via nodejs")
-		.version(VERSION);
+		.version(VERSION)
+		.option(
+			"-t, --timeout <ms>",
+			"How long any single request may take, in milliseconds",
+			// Validated here rather than in the hook below, because commander only
+			// renders InvalidArgumentError as a usage message when an option parser
+			// raises it.
+			parsePositiveInt,
+		)
+		// A hook rather than an "option:timeout" listener: that event carries the
+		// raw string, not the value the parser produced.
+		.hook("preAction", (command) => {
+			const timeout = command.opts().timeout as number | undefined;
+			if (timeout !== undefined) configure({ timeoutMs: timeout });
+		});
 
 	// Register domain command with commander
 	program
@@ -78,6 +101,22 @@ export const createProgram = ({ setExitCode = true } = {}): Command => {
 		.argument("<ip>", "The IP Address to lookup")
 		.usage("1.1.1.1")
 		.action(async (arg: string) => doCommand(ip, arg, setExitCode));
+
+	// Register nameserver command with commander
+	program
+		.command("nameserver")
+		.description("Lookup a nameserver via RDAP")
+		.argument("<nameserver>", "The nameserver to lookup")
+		.usage("ns1.mydomain.com")
+		.action(async (arg: string) => doCommand(nameserver, arg, setExitCode));
+
+	// Register entity command with commander
+	program
+		.command("entity")
+		.description("Lookup an entity by its tagged handle via RDAP")
+		.argument("<handle>", "The entity handle to lookup, such as ABC123-ARIN")
+		.usage("ABC123-ARIN")
+		.action(async (arg: string) => doCommand(entity, arg, setExitCode));
 
 	// Register autnum command with commander
 	program

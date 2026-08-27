@@ -1,9 +1,17 @@
-import { autnumCache, dnsCache, ipv4Cache, ipv6Cache } from "./cache/index.js";
+import {
+	autnumCache,
+	dnsCache,
+	entityCache,
+	ipv4Cache,
+	ipv6Cache,
+} from "./cache/index.js";
 import { RdapServerNotFoundError, RdapValidationError } from "./errors.js";
 import type {
 	RdapAutnumResponse,
 	RdapDomainResponse,
+	RdapEntityResponse,
 	RdapIpResponse,
+	RdapNameserverResponse,
 } from "./types.js";
 import {
 	getTopLevelDomain,
@@ -21,6 +29,8 @@ export type {
 	RdapDomainResponse,
 	RdapDomainSuccessResponse,
 	RdapEntityObjectClass,
+	RdapEntityResponse,
+	RdapEntitySuccessResponse,
 	RdapErrorResponse,
 	RdapEvent,
 	RdapHelpResponse,
@@ -29,6 +39,8 @@ export type {
 	RdapIpSuccessResponse,
 	RdapLink,
 	RdapNameserverObjectClass,
+	RdapNameserverResponse,
+	RdapNameserverSuccessResponse,
 	RdapNotice,
 	RdapObjectClass,
 	RdapPublicID,
@@ -42,8 +54,12 @@ export {
 	RdapNetworkError,
 	RdapRegistryError,
 	RdapServerNotFoundError,
+	RdapTimeoutError,
 	RdapValidationError,
 } from "./errors.js";
+
+export { flushCaches, resetCaches } from "./cache/index.js";
+export { configure, getConfig, type RdapConfig } from "./config.js";
 
 /**
  * Looks up a domain over RDAP.
@@ -131,4 +147,79 @@ export const autnum = async (autnum: number): Promise<RdapAutnumResponse> => {
 	}
 
 	return requestJson<RdapAutnumResponse>(`${rdapServer}/autnum/${autnum}`);
+};
+
+/**
+ * Looks up a nameserver over RDAP.
+ *
+ * Nameservers are served by the registry for their own top level domain, so
+ * this routes through the same bootstrap list as {@link domain}.
+ * @param nameserver - The nameserver host name to look up
+ * @throws {@link RdapValidationError} if the name is not a valid host name
+ * @throws {@link RdapServerNotFoundError} if no RDAP server serves the tld
+ * @throws {@link RdapRegistryError} if the registry answers with an error
+ * @throws {@link RdapTimeoutError} if the request exceeds the configured budget
+ * @throws {@link RdapNetworkError} if the registry cannot be reached
+ */
+export const nameserver = async (
+	nameserver: string,
+): Promise<RdapNameserverResponse> => {
+	const normalized = nameserver.trim().toLowerCase();
+	if (!isFullyQualifiedDomainName(normalized)) {
+		throw new RdapValidationError(
+			`"${nameserver}" is not a valid nameserver name.`,
+			nameserver,
+		);
+	}
+
+	const topLevelDomain = getTopLevelDomain(normalized) as string;
+
+	const rdapServer = await dnsCache.get(topLevelDomain);
+	if (!rdapServer) {
+		throw new RdapServerNotFoundError(
+			`No RDAP server is published for the top level domain "${topLevelDomain}".`,
+			topLevelDomain,
+		);
+	}
+
+	return requestJson<RdapNameserverResponse>(
+		`${rdapServer}/nameserver/${normalized}`,
+	);
+};
+
+/**
+ * Looks up an entity over RDAP.
+ *
+ * Entities are routed by the provider tag on the end of the handle, from the
+ * RFC 8521 object tags registry — a different bootstrap list to the other
+ * lookups. Only a handful of providers register a tag, so a handle without one
+ * cannot be resolved at all.
+ * @param handle - The entity handle to look up, such as "ABC123-ARIN"
+ * @throws {@link RdapValidationError} if the handle is empty
+ * @throws {@link RdapServerNotFoundError} if the handle carries no known tag
+ * @throws {@link RdapRegistryError} if the registry answers with an error
+ * @throws {@link RdapTimeoutError} if the request exceeds the configured budget
+ * @throws {@link RdapNetworkError} if the registry cannot be reached
+ */
+export const entity = async (handle: string): Promise<RdapEntityResponse> => {
+	const normalized = handle.trim();
+	if (!normalized) {
+		throw new RdapValidationError(
+			"An entity handle is required.",
+			handle,
+		);
+	}
+
+	const rdapServer = await entityCache.get(normalized);
+	if (!rdapServer) {
+		throw new RdapServerNotFoundError(
+			`No RDAP service provider is registered for the handle "${normalized}". ` +
+				"Entity lookups only work for handles ending in a registered provider tag, such as \"ABC123-ARIN\".",
+			normalized,
+		);
+	}
+
+	return requestJson<RdapEntityResponse>(
+		`${rdapServer}/entity/${normalized}`,
+	);
 };

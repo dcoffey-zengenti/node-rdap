@@ -1,5 +1,6 @@
 import { matches } from "ip-matching";
 import NodeCache from "node-cache";
+import { getConfig } from "../config.js";
 import { fetchIpv6List } from "../utils/dns.js";
 
 class IPV6Cache {
@@ -8,7 +9,6 @@ class IPV6Cache {
 
 	constructor() {
 		this.ipCache = new NodeCache({
-			stdTTL: 86400,
 			checkperiod: 17280,
 			useClones: false,
 		});
@@ -18,6 +18,7 @@ class IPV6Cache {
 	}
 
 	async get(ipAddress: string): Promise<string | null> {
+		const { cacheTtlSeconds } = getConfig();
 		const registry = this.ipCache.get<string>(ipAddress);
 		if (registry) return registry;
 		const masks = this.maskCache.keys();
@@ -25,7 +26,7 @@ class IPV6Cache {
 		if (maskMatch) {
 			const registry = this.maskCache.get<string>(maskMatch);
 			if (registry) {
-				this.ipCache.set<string>(ipAddress, registry);
+				this.ipCache.set<string>(ipAddress, registry, cacheTtlSeconds);
 				return registry;
 			}
 			return null;
@@ -38,10 +39,11 @@ class IPV6Cache {
 					this.maskCache.set<string>(
 						mask,
 						server.endsWith("/") ? server.slice(0, -1) : server,
+						cacheTtlSeconds,
 					);
 					if (matches(ipAddress, mask)) {
 						registry = server.endsWith("/") ? server.slice(0, -1) : server;
-						this.ipCache.set<string>(ipAddress, registry);
+						this.ipCache.set<string>(ipAddress, registry, cacheTtlSeconds);
 					}
 				}
 			}
@@ -51,6 +53,7 @@ class IPV6Cache {
 
 	async reset() {
 		this.flush();
+		const { cacheTtlSeconds } = getConfig();
 		const ipv6 = await fetchIpv6List();
 		for (const service of ipv6.services) {
 			for (const mask of service[0]) {
@@ -58,6 +61,7 @@ class IPV6Cache {
 				this.maskCache.set<string>(
 					mask,
 					server.endsWith("/") ? server.slice(0, -1) : server,
+					cacheTtlSeconds,
 				);
 			}
 		}

@@ -203,6 +203,15 @@ export interface RdapAutnumSuccessResponse
   rdapConformance: string[];
 }
 
+export interface RdapNameserverSuccessResponse
+  extends RdapNameserverObjectClass {
+  rdapConformance: string[];
+}
+
+export interface RdapEntitySuccessResponse extends RdapEntityObjectClass {
+  rdapConformance: string[];
+}
+
 export interface RdapHelpSuccessResponse {
   rdapConformance: string[];
   notices?: RdapNotice[];
@@ -225,4 +234,6 @@ export interface RdapErrorResponse {
 export type RdapDomainResponse = RdapDomainSuccessResponse;
 export type RdapIpResponse = RdapIpSuccessResponse;
 export type RdapAutnumResponse = RdapAutnumSuccessResponse;
+export type RdapNameserverResponse = RdapNameserverSuccessResponse;
+export type RdapEntityResponse = RdapEntitySuccessResponse;
 export type RdapHelpResponse = RdapHelpSuccessResponse;

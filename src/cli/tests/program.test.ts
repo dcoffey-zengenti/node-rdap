@@ -1,11 +1,13 @@
 import { readFileSync } from "node:fs";
 import { InvalidArgumentError } from "commander";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { autnum, domain, ip } from "../../client.js";
+import { autnum, domain, entity, ip, nameserver } from "../../client.js";
+import { getConfig, resetConfig } from "../../config.js";
 import {
 	createProgram,
 	doCommand,
 	parseArgInt,
+	parsePositiveInt,
 	VERSION,
 } from "../program.js";
 
@@ -13,6 +15,8 @@ vi.mock("../../client.js", () => ({
 	domain: vi.fn(),
 	ip: vi.fn(),
 	autnum: vi.fn(),
+	nameserver: vi.fn(),
+	entity: vi.fn(),
 }));
 
 describe("parseArgInt", () => {
@@ -101,12 +105,28 @@ describe("createProgram", () => {
 		expect(createProgram().version()).toBe(pkg.version);
 	});
 
-	test("registers the domain, ip and autnum commands", () => {
+	test("registers every lookup command", () => {
 		const names = createProgram()
 			.commands.map((command) => command.name())
 			.sort();
 
-		expect(names).toEqual(["autnum", "domain", "ip"]);
+		expect(names).toEqual(["autnum", "domain", "entity", "ip", "nameserver"]);
+	});
+
+	test("passes the nameserver argument through to the client", async () => {
+		await createProgram().parseAsync(["nameserver", "ns1.example.com"], {
+			from: "user",
+		});
+
+		expect(nameserver).toHaveBeenCalledWith("ns1.example.com");
+	});
+
+	test("passes the entity argument through to the client", async () => {
+		await createProgram().parseAsync(["entity", "ABC123-ARIN"], {
+			from: "user",
+		});
+
+		expect(entity).toHaveBeenCalledWith("ABC123-ARIN");
 	});
 
 	test("returns an independent program each call", () => {
@@ -144,5 +164,44 @@ describe("createProgram", () => {
 			program.parseAsync(["autnum", "badger"], { from: "user" }),
 		).rejects.toThrow("Not a number.");
 		expect(autnum).not.toHaveBeenCalled();
+	});
+});
+
+describe("parsePositiveInt", () => {
+	test("parses a positive integer", () => {
+		expect(parsePositiveInt("5000")).toBe(5000);
+	});
+
+	test("rejects zero and negatives", () => {
+		expect(() => parsePositiveInt("0")).toThrow(InvalidArgumentError);
+		expect(() => parsePositiveInt("-1")).toThrow("Must be greater than zero.");
+	});
+
+	test("rejects something that is not a number", () => {
+		expect(() => parsePositiveInt("badger")).toThrow("Not a number.");
+	});
+});
+
+describe("--timeout", () => {
+	afterEach(() => {
+		resetConfig();
+	});
+
+	test("applies the timeout before the lookup runs", async () => {
+		await createProgram().parseAsync(
+			["--timeout", "250", "domain", "example.com"],
+			{ from: "user" },
+		);
+
+		expect(getConfig().timeoutMs).toBe(250);
+		expect(domain).toHaveBeenCalledWith("example.com");
+	});
+
+	test("leaves the configured timeout alone when not given", async () => {
+		await createProgram().parseAsync(["domain", "example.com"], {
+			from: "user",
+		});
+
+		expect(getConfig().timeoutMs).toBe(10_000);
 	});
 });

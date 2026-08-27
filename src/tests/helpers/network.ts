@@ -37,6 +37,16 @@ export const IPV6_LIST = list([[["2001:4860::/32"], [`${ARIN}/`]]]);
 /** Deliberately narrow so an out-of-range number has no registry. */
 export const ASN_LIST = list([[["15169-15169"], [`${ARIN}/`]]]);
 
+/** The RFC 8521 object tags registry, which uses three lists per entry. */
+export const OBJECT_TAG_LIST = {
+	description: "test fixture",
+	publication: "2026-01-01T00:00:00Z",
+	version: "1.0",
+	services: [
+		[["info@example.net"], ["EXAMPLE"], [`${ARIN}/`]],
+	] as [string[], string[], string[]][],
+};
+
 /** Domains the fake registry will admit to knowing about. */
 export const KNOWN_DOMAINS = new Set([
 	"example.com",
@@ -63,6 +73,7 @@ const route = (url: string) => {
 	if (url === `${IANA}/ipv4.json`) return ok(IPV4_LIST);
 	if (url === `${IANA}/ipv6.json`) return ok(IPV6_LIST);
 	if (url === `${IANA}/asn.json`) return ok(ASN_LIST);
+	if (url === `${IANA}/object-tags.json`) return ok(OBJECT_TAG_LIST);
 
 	const domainMatch = url.match(/\/domain\/(.+)$/);
 	if (domainMatch) {
@@ -81,6 +92,24 @@ const route = (url: string) => {
 		return ok({
 			objectClassName: "ip network",
 			handle: ipMatch[1],
+			rdapConformance: ["rdap_level_0"],
+		});
+	}
+
+	const nameserverMatch = url.match(/\/nameserver\/(.+)$/);
+	if (nameserverMatch) {
+		return ok({
+			objectClassName: "nameserver",
+			ldhName: nameserverMatch[1].toUpperCase(),
+			rdapConformance: ["rdap_level_0"],
+		});
+	}
+
+	const entityMatch = url.match(/\/entity\/(.+)$/);
+	if (entityMatch) {
+		return ok({
+			objectClassName: "entity",
+			handle: entityMatch[1],
 			rdapConformance: ["rdap_level_0"],
 		});
 	}

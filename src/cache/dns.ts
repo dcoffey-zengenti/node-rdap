@@ -1,4 +1,5 @@
 import NodeCache from "node-cache";
+import { getConfig } from "../config.js";
 import { type DNSList, fetchDNSList } from "../utils/dns.js";
 
 class DNSCache {
@@ -10,6 +11,7 @@ class DNSCache {
 	}
 
 	async get(topLevelDomain: string): Promise<string | null> {
+		const { cacheTtlSeconds } = getConfig();
 		const registry = this.cache.get<string>(topLevelDomain);
 		if (registry) {
 			return registry;
@@ -22,6 +24,7 @@ class DNSCache {
 					this.cache.set<string>(
 						tld,
 						server.endsWith("/") ? server.slice(0, -1) : server,
+						cacheTtlSeconds,
 					);
 					if (tld === topLevelDomain) {
 						registry = server.endsWith("/") ? server.slice(0, -1) : server;
@@ -33,6 +36,7 @@ class DNSCache {
 	}
 
 	async set(dnsList: DNSList) {
+		const { cacheTtlSeconds } = getConfig();
 		for (const service of dnsList.services) {
 			for (const tld of service[0]) {
 				if (!this.cache.has(tld)) {
@@ -40,10 +44,17 @@ class DNSCache {
 					this.cache.set<string>(
 						tld,
 						server.endsWith("/") ? server.slice(0, -1) : server,
+						cacheTtlSeconds,
 					);
 				}
 			}
 		}
+	}
+
+	/** Drops everything cached and refetches the list from IANA. */
+	async reset() {
+		this.flush();
+		await this.set(await fetchDNSList());
 	}
 
 	flush() {

@@ -1,4 +1,5 @@
 import NodeCache from "node-cache";
+import { getConfig } from "../config.js";
 import { inRange } from "../utils/autnum.js";
 import { fetchASNList } from "../utils/dns.js";
 
@@ -7,7 +8,6 @@ class AutnumCache {
   rangeCache: NodeCache;
   constructor() {
     this.autnumCache = new NodeCache({
-      stdTTL: 86400,
       checkperiod: 17280,
       useClones: false,
     });
@@ -17,6 +17,7 @@ class AutnumCache {
   }
 
   async get(autonomousSystemNumber: number): Promise<string | null> {
+    const { cacheTtlSeconds } = getConfig();
     const registry = this.autnumCache.get<string>(autonomousSystemNumber);
     if (registry) return registry;
     const autnumRanges = this.rangeCache.keys();
@@ -26,7 +27,11 @@ class AutnumCache {
     if (rangeMatch) {
       const registry = this.rangeCache.get<string>(rangeMatch);
       if (registry) {
-        this.autnumCache.set<string>(autonomousSystemNumber, registry);
+        this.autnumCache.set<string>(
+          autonomousSystemNumber,
+          registry,
+          cacheTtlSeconds,
+        );
         return registry;
       }
       return null;
@@ -38,11 +43,16 @@ class AutnumCache {
           const server = service[1][0];
           this.rangeCache.set<string>(
             asnRange,
-            server.endsWith("/") ? server.slice(0, -1) : server
+            server.endsWith("/") ? server.slice(0, -1) : server,
+            cacheTtlSeconds
           );
           if (inRange(autonomousSystemNumber, asnRange)) {
             registry = server.endsWith("/") ? server.slice(0, -1) : server;
-            this.autnumCache.set<string>(autonomousSystemNumber, registry);
+            this.autnumCache.set<string>(
+          autonomousSystemNumber,
+          registry,
+          cacheTtlSeconds,
+        );
           }
         }
       }
@@ -52,13 +62,15 @@ class AutnumCache {
 
   async reset() {
     this.flush();
+    const { cacheTtlSeconds } = getConfig();
     const asn = await fetchASNList();
     for (const service of asn.services) {
       for (const asnRange of service[0]) {
         const server = service[1][0];
         this.rangeCache.set<string>(
           asnRange,
-          server.endsWith("/") ? server.slice(0, -1) : server
+          server.endsWith("/") ? server.slice(0, -1) : server,
+          cacheTtlSeconds
         );
       }
     }
