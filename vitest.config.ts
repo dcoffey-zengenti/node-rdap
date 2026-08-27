@@ -6,6 +6,10 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     exclude: ['node_modules', 'dist'],
-    watch: true
+    watch: true,
+    coverage: {
+      include: ['src/**/*.ts'],
+      exclude: ['src/**/tests/**', 'src/types.ts']
+    }
   }
 });

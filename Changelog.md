@@ -1,3 +1,12 @@
+# 0.5.2
+
+Fixed the ASN cache never storing a lookup. The per-number cache was read and flushed but never written to, so every ASN lookup fell through to a scan of the whole range list instead of a direct hit.
+Fixed interactive mode exiting when a command was given a bad argument, rather than reporting it and carrying on.
+Fixed the `services` type on the IANA list responses, which described a single entry rather than an array of them.
+CLI logic moved to `src/cli/program.ts` so it can be tested without running the CLI. `src/cli.ts` is unchanged as the entry point.
+Tests are no longer compiled into `dist`, so they are no longer published to npm. `build` uses the new `tsconfig.build.json`; the new `typecheck` script still checks them.
+Tests no longer make real requests to IANA or the RDAP registries, and no longer use real company domains. Test coverage is now at 100%.
+
 # 0.5.1
 
 Dependency updates - @biomejs/biome, @types/node, @vitest/coverage-v8, rimraf, typescript, vitest, commander.

@@ -2,12 +2,12 @@ import { getTopLevelDomain } from "../domain.js";
 
 describe("getTopLevelDomain", () => {
   test("works on standard input", () => {
-    const tld = getTopLevelDomain("insytful.com");
+    const tld = getTopLevelDomain("example.com");
     expect(tld).toBe("com");
   });
 
   test("converts special characters to punycode", () => {
-    const tld = getTopLevelDomain("insytful.集团");
+    const tld = getTopLevelDomain("example.集团");
     expect(tld).toBe("xn--3bst00m");
   });
 

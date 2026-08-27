@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "//": "Build-only config. Tests are still typechecked by tsconfig.json (see the typecheck script), they just don't belong in the published output.",
+  "exclude": ["node_modules", ".vscode", "src/**/tests/**"]
+}

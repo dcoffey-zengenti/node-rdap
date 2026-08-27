@@ -1,6 +1,6 @@
 {
   "name": "node-rdap",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "type": "module",
   "main": "./dist/tsc/client.js",
   "types": "./dist/tsc/client.d.ts",
@@ -26,9 +26,10 @@
     "test": "vitest",
     "clean": "rimraf dist build package",
     "cli": "node dist/tsc/cli.js",
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.build.json",
     "build:cli": "pnpm build && pnpm cli",
-    "build-all": "pnpm clean && pnpm build"
+    "build-all": "pnpm clean && pnpm build",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.10",

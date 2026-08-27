@@ -1,7 +1,7 @@
 export interface DNSList {
   description: string;
   publication: string;
-  services: [string[], string[]];
+  services: [string[], string[]][];
   version: string;
 }
 

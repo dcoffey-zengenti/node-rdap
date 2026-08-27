@@ -3,21 +3,21 @@ import { isFullyQualifiedDomainName } from "../domain.js";
 describe("isFullyQualifieidDomainName", () => {
   test("should return true for valid FQDN", () => {
     let isFQDN: boolean;
-    isFQDN = isFullyQualifiedDomainName("insytful.com");
+    isFQDN = isFullyQualifiedDomainName("example.com");
     expect(isFQDN).toBe(true);
-    isFQDN = isFullyQualifiedDomainName("insytful.co.uk");
+    isFQDN = isFullyQualifiedDomainName("example.co.uk");
     expect(isFQDN).toBe(true);
-    isFQDN = isFullyQualifiedDomainName("insytful.badger");
+    isFQDN = isFullyQualifiedDomainName("example.badger");
     expect(isFQDN).toBe(true);
   });
 
   test("should return false for invalid FQDN", () => {
     let isFQDN: boolean;
-    isFQDN = isFullyQualifiedDomainName("insytful");
+    isFQDN = isFullyQualifiedDomainName("example");
     expect(isFQDN).toBe(false);
-    isFQDN = isFullyQualifiedDomainName("https://www.insytful.com");
+    isFQDN = isFullyQualifiedDomainName("https://www.example.com");
     expect(isFQDN).toBe(false);
-    isFQDN = isFullyQualifiedDomainName("https://www.insytful.com/news");
+    isFQDN = isFullyQualifiedDomainName("https://www.example.com/news");
     expect(isFQDN).toBe(false);
   });
 

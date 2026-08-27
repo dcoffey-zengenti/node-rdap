@@ -25,7 +25,11 @@ class AutnumCache {
     );
     if (rangeMatch) {
       const registry = this.rangeCache.get<string>(rangeMatch);
-      return registry || null;
+      if (registry) {
+        this.autnumCache.set<string>(autonomousSystemNumber, registry);
+        return registry;
+      }
+      return null;
     } else {
       let registry: string | null = null;
       const asn = await fetchASNList();
@@ -38,6 +42,7 @@ class AutnumCache {
           );
           if (inRange(autonomousSystemNumber, asnRange)) {
             registry = server.endsWith("/") ? server.slice(0, -1) : server;
+            this.autnumCache.set<string>(autonomousSystemNumber, registry);
           }
         }
       }
