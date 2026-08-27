@@ -75,3 +75,22 @@ export class RdapNetworkError extends RdapError {
 		this.url = url;
 	}
 }
+
+/** A request did not complete within the configured timeout. */
+export class RdapTimeoutError extends RdapError {
+	/** The url that timed out. */
+	readonly url: string;
+	/** The budget that was exceeded, in milliseconds. */
+	readonly timeoutMs: number;
+
+	constructor(
+		message: string,
+		url: string,
+		timeoutMs: number,
+		options?: ErrorOptions,
+	) {
+		super(message, options);
+		this.url = url;
+		this.timeoutMs = timeoutMs;
+	}
+}

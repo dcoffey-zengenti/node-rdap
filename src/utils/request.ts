@@ -1,4 +1,9 @@
-import { RdapNetworkError, RdapRegistryError } from "../errors.js";
+import { getConfig } from "../config.js";
+import {
+	RdapNetworkError,
+	RdapRegistryError,
+	RdapTimeoutError,
+} from "../errors.js";
 import type { RdapErrorResponse } from "../types.js";
 
 const ACCEPT = "application/json,application/rdap+json";
@@ -11,19 +16,32 @@ const ACCEPT = "application/json,application/rdap+json";
  * hops of a lookup fail the same way.
  * @param url - The url to fetch
  * @throws {@link RdapRegistryError} if the server answers with an error status
+ * @throws {@link RdapTimeoutError} if the request exceeds the configured budget
  * @throws {@link RdapNetworkError} if the request fails or the body is not JSON
  */
 export const requestJson = async <T>(url: string): Promise<T> => {
+	const { timeoutMs } = getConfig();
 	let response: Response;
 
 	try {
-		response = await fetch(url, { headers: { accept: ACCEPT } });
+		response = await fetch(url, {
+			headers: { accept: ACCEPT },
+			signal: AbortSignal.timeout(timeoutMs),
+		});
 	} catch (error) {
-		throw new RdapNetworkError(
-			`Could not reach ${url}.`,
-			url,
-			{ cause: error },
-		);
+		// AbortSignal.timeout aborts with a DOMException named TimeoutError,
+		// which is worth telling apart from an unreachable host.
+		if ((error as Error)?.name === "TimeoutError") {
+			throw new RdapTimeoutError(
+				`${url} did not respond within ${timeoutMs}ms.`,
+				url,
+				timeoutMs,
+				{ cause: error },
+			);
+		}
+		throw new RdapNetworkError(`Could not reach ${url}.`, url, {
+			cause: error,
+		});
 	}
 
 	if (!response.ok) {

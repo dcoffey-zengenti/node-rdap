@@ -27,7 +27,11 @@ const response = (
 	json: async () => body,
 });
 
-const ACCEPT = { headers: { accept: "application/json,application/rdap+json" } };
+// Every request also carries an AbortSignal for the configured timeout.
+const REQUEST = {
+	headers: { accept: "application/json,application/rdap+json" },
+	signal: expect.any(AbortSignal),
+};
 
 describe("client", () => {
 	beforeEach(() => {
@@ -80,7 +84,7 @@ describe("client", () => {
 			});
 			expect(fetchMock).toHaveBeenCalledWith(
 				"https://rdap.test/domain/example.com",
-				ACCEPT,
+				REQUEST,
 			);
 		});
 
@@ -93,7 +97,7 @@ describe("client", () => {
 			expect(dnsCache.get).toHaveBeenCalledWith("com");
 			expect(fetchMock).toHaveBeenCalledWith(
 				"https://rdap.test/domain/example.com",
-				ACCEPT,
+				REQUEST,
 			);
 		});
 	});
@@ -109,7 +113,7 @@ describe("client", () => {
 			expect(ipv6Cache.get).not.toHaveBeenCalled();
 			expect(fetchMock).toHaveBeenCalledWith(
 				"https://rdap.test/ip/8.8.8.8",
-				ACCEPT,
+				REQUEST,
 			);
 		});
 
@@ -162,7 +166,7 @@ describe("client", () => {
 			});
 			expect(fetchMock).toHaveBeenCalledWith(
 				"https://rdap.test/autnum/15169",
-				ACCEPT,
+				REQUEST,
 			);
 		});
 
