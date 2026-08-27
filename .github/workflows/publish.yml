@@ -1,0 +1,86 @@
+name: Publish
+
+# Publishes to npm when a version tag is pushed, for example:
+#   git tag v1.0.0 && git push origin v1.0.0
+#
+# Requires an NPM_TOKEN repository secret holding an npm automation token with
+# publish rights on the package.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+  # Lets npm attest where the package was built from. The repository is public,
+  # which provenance requires.
+  id-token: write
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: pnpm
+          registry-url: "https://registry.npmjs.org"
+
+      - run: pnpm install --frozen-lockfile
+
+      # Publishing a tag that disagrees with package.json produces a release
+      # nobody can find, so stop before that happens rather than after.
+      - name: Check the tag matches package.json
+        shell: bash
+        run: |
+          tagged="${GITHUB_REF_NAME#v}"
+          declared="$(node -p "require('./package.json').version")"
+          if [ "$tagged" != "$declared" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} does not match package.json version ${declared}"
+            exit 1
+          fi
+          echo "Publishing ${declared}"
+
+      # The same gates CI runs. A tag should never be the first time these fail.
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test
+        run: pnpm vitest run
+
+      - name: Build
+        run: pnpm build
+
+      # Packs and installs the tarball, so the artefact about to be published is
+      # the one that gets checked.
+      - name: Packaging smoke test
+        run: pnpm test:pack
+
+      # A prerelease must not become the version `npm install node-rdap` gives
+      # people, so it goes out under the `next` tag instead of `latest`.
+      - name: Choose the dist-tag
+        id: disttag
+        shell: bash
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          if [[ "$version" == *-* ]]; then
+            echo "tag=next" >> "$GITHUB_OUTPUT"
+            echo "Prerelease: publishing under the 'next' tag"
+          else
+            echo "tag=latest" >> "$GITHUB_OUTPUT"
+            echo "Stable: publishing under the 'latest' tag"
+          fi
+
+      - name: Publish
+        run: npm publish --provenance --access public --tag "${{ steps.disttag.outputs.tag }}"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
