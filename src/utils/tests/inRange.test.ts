@@ -1,4 +1,4 @@
-import { inRange } from "../autnum";
+import { inRange } from "../autnum.js";
 
 describe("inRange", () => {
   test("returns true when value is within the given range", () => {

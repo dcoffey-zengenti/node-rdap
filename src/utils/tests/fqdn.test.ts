@@ -1,4 +1,4 @@
-import { isFullyQualifiedDomainName } from "../domain";
+import { isFullyQualifiedDomainName } from "../domain.js";
 
 describe("isFullyQualifieidDomainName", () => {
   test("should return true for valid FQDN", () => {

@@ -36,7 +36,7 @@ const parseArgInt = (value: string): number => {
 program
 	.name("node-rdap")
 	.description("CLI for querying rdap via nodejs")
-	.version("0.3.0");
+	.version("0.5.1");
 
 // Register domain command with commander
 program

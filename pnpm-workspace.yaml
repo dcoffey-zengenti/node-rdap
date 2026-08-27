@@ -1,0 +1,16 @@
+engineStrict: true
+
+# Exempt this one version from pnpm's 24h minimumReleaseAge quarantine.
+# @types/node@26.4.0 was published 2026-08-27 and is otherwise blocked.
+# Scoped to the exact version on purpose: a bare "@types/node" entry would
+# exempt every future publish of the package from the guard.
+minimumReleaseAgeExclude:
+  - "@types/node@26.4.0"
+
+# pnpm 11 makes unrecorded build scripts a hard error (ERR_PNPM_IGNORED_BUILDS),
+# which makes every pnpm command exit 1 until each one is decided.
+# esbuild arrives transitively via vitest/vite; tsc, biome and the test suite
+# all pass without its platform binary, so it stays unbuilt. Flip to true if
+# something ever needs it.
+allowBuilds:
+  esbuild: false

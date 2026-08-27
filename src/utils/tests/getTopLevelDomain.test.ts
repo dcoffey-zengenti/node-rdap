@@ -1,4 +1,4 @@
-import { getTopLevelDomain } from "../domain";
+import { getTopLevelDomain } from "../domain.js";
 
 describe("getTopLevelDomain", () => {
   test("works on standard input", () => {

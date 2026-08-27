@@ -1,3 +1,11 @@
+# 0.5.1
+
+Dependency updates - @biomejs/biome, @types/node, @vitest/coverage-v8, rimraf, typescript, vitest, commander.
+Typescript 7 - `moduleResolution` is now `nodenext` and `rootDir` is set explicitly, both required by the new compiler. Relative imports in tests gained their missing `.js` extensions.
+Vitest 4 and Commander 15.
+Moved to pnpm 12. Build script approval (`allowBuilds`) and a release-age policy exemption are now recorded in `pnpm-workspace.yaml`.
+Fixed the CLI reporting its version as 0.3.0.
+
 # 0.5.0
 
 Moved from yarn to pnpm

@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "target": "esnext",
-    "module": "esnext",
-    "moduleResolution": "node",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "allowJs": false,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -21,6 +21,7 @@
     "importHelpers": false,
     "skipLibCheck": true,
     "outDir": "./dist/tsc/",
+    "rootDir": "./src",
     "types": ["vitest/globals", "node"],
     "lib": ["ESNext", "DOM"]
   },
