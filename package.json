@@ -1,16 +1,31 @@
 {
   "name": "node-rdap",
-  "version": "0.5.2",
+  "version": "0.6.0",
+  "description": "RDAP client and CLI for domain, IP and ASN lookups in Node.js",
   "type": "module",
   "main": "./dist/tsc/client.js",
   "types": "./dist/tsc/client.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/tsc/client.d.ts",
+      "import": "./dist/tsc/client.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "node-rdap": "./dist/tsc/cli.js"
+  },
   "files": [
     "dist/**/*"
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/dcoffey-zengenti/node-rdap"
+    "url": "git+https://github.com/dcoffey-zengenti/node-rdap.git"
   },
+  "bugs": {
+    "url": "https://github.com/dcoffey-zengenti/node-rdap/issues"
+  },
+  "homepage": "https://github.com/dcoffey-zengenti/node-rdap#readme",
   "author": "Derry coffey <d.coffey@zengenti.com>",
   "license": "MIT",
   "keywords": [
@@ -29,7 +44,8 @@
     "build": "tsc -p tsconfig.build.json",
     "build:cli": "pnpm build && pnpm cli",
     "build-all": "pnpm clean && pnpm build",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test:pack": "node scripts/smoke-pack.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.10",
@@ -46,7 +62,7 @@
     "node-cache": "^5.1.2"
   },
   "engines": {
-    "node": ">=20.19.0 || >=22.12.0"
+    "node": "^22.12.0 || >=24"
   },
   "packageManager": "pnpm@12.0.0+sha512.9e2e3dc3911995868dc94b8175c217c27e95408fa03b4a22749778f2b34f773b77cdd3b39ede8171b22fcd53be6a35342e9fac9948a68ef58df6488ce89a7e67"
 }

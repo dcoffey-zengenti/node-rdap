@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { realpathSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { createProgram, startInteractive } from "./cli/program.js";
 
@@ -30,8 +31,27 @@ export const main = (
 	return program;
 };
 
-/* c8 ignore start -- entry guard, exercised by running the binary not by tests */
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+/* c8 ignore start -- entry guard, covered by the packed-tarball smoke test (pnpm test:pack) */
+/**
+ * Whether this module is the process entry point.
+ *
+ * npm installs a package's bin as a symlink, so `process.argv[1]` is the
+ * symlink path while `import.meta.url` is always the resolved real path.
+ * Comparing them without resolving first makes a globally installed
+ * `node-rdap` exit silently without running anything.
+ */
+const isEntryPoint = (): boolean => {
+	const invokedAs = process.argv[1];
+	if (!invokedAs) return false;
+	try {
+		return import.meta.url === pathToFileURL(realpathSync(invokedAs)).href;
+	} catch {
+		// realpathSync throws if argv[1] is not a real path (an eval, say).
+		return false;
+	}
+};
+
+if (isEntryPoint()) {
 	main();
 }
 /* c8 ignore stop */

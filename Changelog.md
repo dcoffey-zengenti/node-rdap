@@ -1,3 +1,14 @@
+# 0.6.0
+
+The CLI is now installable. `npm install -g node-rdap` puts a `node-rdap` command on your path, and `npx node-rdap` works. Previously the CLI was built and published but had no `bin` entry, so there was no way to run it short of naming the file inside `node_modules`.
+Fixed the CLI doing nothing when run through the symlink npm installs a `bin` as. The entry point check compared the resolved module path against the unresolved `process.argv[1]`, so it never matched and the process exited silently.
+Added an `exports` map. The public API is `node-rdap` itself; internals such as `node-rdap/dist/tsc/cache/asn.js` are no longer importable.
+Added a LICENSE file, and `bugs` and `homepage` links. The repository url now uses `git+https` rather than the deprecated `git` protocol.
+Corrected `engines` to `^22.12.0 || >=24`. The previous range, `>=20.19.0 || >=22.12.0`, was equivalent to `>=20.19.0` because the second clause could never exclude anything, and it allowed non-LTS releases. Node 20 reached end of life in April 2026. This is a statement of what is tested and supported: `engines` is advisory, so installs on older runtimes still succeed with a warning.
+Added continuous integration running typecheck, lint, tests, build and a packaging smoke test against Node 22 and 24.
+Added `pnpm test:pack`, which packs the tarball, installs it into a scratch project and checks it as a consumer sees it. It needs a network, so it is not part of `pnpm test`.
+Readme now documents the CLI, interactive mode, caching, the supported Node versions and that the package is ESM only.
+
 # 0.5.2
 
 Fixed the ASN cache never storing a lookup. The per-number cache was read and flushed but never written to, so every ASN lookup fell through to a scan of the whole range list instead of a direct hit.

@@ -9,7 +9,7 @@ import { autnum, domain, ip } from "../client.js";
  * compiled entry point lives at dist/tsc/cli.js, so a relative import of
  * package.json would need a different path in source than in build output.
  */
-export const VERSION = "0.5.2";
+export const VERSION = "0.6.0";
 
 /**
  * This is a helper to write the output or error of a function to the console
