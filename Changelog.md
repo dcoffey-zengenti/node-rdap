@@ -1,3 +1,54 @@
+# 1.0.0
+
+The first stable release. The API described here is the one 1.x will keep.
+
+Added `nameserver()`, for looking up a nameserver by name. It is routed by its own top level domain, through the same IANA bootstrap list as `domain()`.
+Added `entity()`, for looking up an entity by its handle. Handles are routed by the provider tag after the final hyphen, from the RFC 8521 object tags registry. Only a handful of providers register a tag, so a handle without one cannot be routed and says so plainly. This is a limit of the protocol rather than of this package.
+Added request timeouts, defaulting to 10 seconds and applied to every request a lookup makes. There was previously no limit at all, so a server that accepted a connection and then went quiet would hang the caller indefinitely. Exceeding the budget raises `RdapTimeoutError`.
+Added `configure({ timeoutMs, cacheTtlSeconds })` and `getConfig()` for setting policy once per process.
+Added `flushCaches()` and `resetCaches()`, so cache control is reachable now that the exports map has closed off the internals.
+The CLI gains `nameserver` and `entity` commands and a `--timeout` flag, so everything the library can do is reachable from the command line.
+`help` and the search endpoints are deliberately not implemented. The Readme says so rather than leaving it implied.
+
+## Upgrading from 0.x
+
+Almost all of the work is in the error handling. Previously every failure was a plain `Error` and the only way to tell them apart was to match on the message.
+
+```js
+// before
+try {
+  await domain("example.com");
+} catch (error) {
+  if (error.message.includes("could not be found")) { /* ... */ }
+}
+
+// after
+import { RdapServerNotFoundError, RdapRegistryError } from "node-rdap";
+
+try {
+  await domain("example.com");
+} catch (error) {
+  if (error instanceof RdapServerNotFoundError) { /* ... */ }
+  else if (error instanceof RdapRegistryError) { console.log(error.status); }
+}
+```
+
+Every error message has changed, so any code matching on message text needs updating. The error type is now the thing to branch on.
+
+`ip()` and `autnum()` now reject when the registry answers with an error status. They used to resolve with the RDAP error body typed as a success, so a lookup that appeared to succeed may now correctly throw.
+
+`ip()` rejects a malformed address up front with `RdapValidationError` rather than surfacing `ip-matching`'s wording, such as "Value has to be in the range of 0-255".
+
+`autnum()` rejects negative and fractional numbers as invalid rather than reporting that no registry serves them.
+
+Response types no longer include the error response fields, so `result.errorCode` is gone. An error body is on `RdapRegistryError#body`.
+
+`remarks`, `variants`, `nameservers` and `secureDNS` are now optional, because registries routinely omit them. Code that read them without checking was already at risk of a runtime error and will now be told so at compile time.
+
+Deep imports such as `node-rdap/dist/tsc/cache/asn.js` no longer resolve. Everything public is exported from `node-rdap` itself.
+
+The supported Node versions are now `^22.12.0 || >=24`. Older runtimes still install, with a warning.
+
 # 1.0.0-rc.1
 
 Breaking. This is the release that corrects the public API before it is frozen for 1.0.0.

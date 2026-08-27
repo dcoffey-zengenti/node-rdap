@@ -1,7 +1,7 @@
 ---
 title: node-rdap 1.0.0 stable release
 type: feat
-status: active
+status: completed
 date: 2026-08-27
 ---
 

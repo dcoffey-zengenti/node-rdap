@@ -2,9 +2,9 @@
 
 Node RDAP client for Whois lookup in Node JS.
 
-Looks up domains, IP addresses and Autonomous System Numbers over
-[RDAP](https://datatracker.ietf.org/doc/html/rfc7480), the protocol that replaces
-WHOIS. Ships as a library and a command line tool.
+Looks up domains, IP addresses, Autonomous System Numbers, nameservers and
+entities over [RDAP](https://datatracker.ietf.org/doc/html/rfc7480), the
+protocol that replaces WHOIS. Ships as a library and a command line tool.
 
 ## Requirements
 
@@ -29,34 +29,52 @@ Yarn:
 ## Usage
 
 ```typescript
-import { domain, ip, autnum } from "node-rdap";
+import { domain, ip, autnum, nameserver, entity } from "node-rdap";
 
-domain("github.com").then((result) => {
-  console.log(result);
-});
-
-ip("140.82.121.4").then((result) => {
-  console.log(result);
-});
-
-ip("2a00:1450:4009:818::200e").then((result) => {
-  console.log(result);
-});
-
-autnum(1).then((result) => {
-  console.log(result);
-});
+await domain("github.com");
+await ip("140.82.121.4");
+await ip("2a00:1450:4009:818::200e");
+await autnum(1);
+await nameserver("ns1.github.com");
+await entity("ZG39-ARIN");
 ```
 
-Response types are exported for TypeScript consumers:
+### What each lookup covers
+
+| Function | Takes | Routed by |
+| --- | --- | --- |
+| `domain(fqdn)` | A domain name | The IANA DNS bootstrap file |
+| `ip(address)` | An IPv4 or IPv6 address | The IANA IPv4/IPv6 bootstrap files |
+| `autnum(number)` | An Autonomous System Number | The IANA ASN bootstrap file |
+| `nameserver(name)` | A nameserver host name | The DNS bootstrap file, by its own tld |
+| `entity(handle)` | A tagged entity handle | The RFC 8521 object tags registry |
+
+**Entity lookups are limited by design.** RFC 8521 routes a handle by the
+provider tag after its final hyphen, and only a handful of providers register
+one. `entity("ZG39-ARIN")` works; a handle with no registered tag cannot be
+routed at all and raises `RdapServerNotFoundError`.
+
+`help` and the search endpoints (`/domains?name=`, `/nameservers?ip=`) are not
+implemented.
+
+### Types
+
+Response types are exported for TypeScript consumers, along with the object
+classes they are built from:
 
 ```typescript
 import type {
   RdapDomainResponse,
   RdapIpResponse,
   RdapAutnumResponse,
+  RdapNameserverResponse,
+  RdapEntityResponse,
 } from "node-rdap";
 ```
+
+Fields that registries commonly omit — `remarks`, `variants`, `nameservers`,
+`secureDNS` — are optional, because they genuinely are absent from real
+responses.
 
 ### Errors
 
@@ -65,9 +83,10 @@ a subclass to tell them apart:
 
 | Error | Thrown when |
 | --- | --- |
-| `RdapValidationError` | The value is not a well formed domain, IP address or ASN |
-| `RdapServerNotFoundError` | IANA publishes no RDAP server for it |
+| `RdapValidationError` | The value is not a well formed domain, IP, ASN or handle |
+| `RdapServerNotFoundError` | Nothing publishes an RDAP server for it |
 | `RdapRegistryError` | The server was reached and answered with an error status |
+| `RdapTimeoutError` | The request exceeded the configured timeout |
 | `RdapNetworkError` | The server could not be reached, or its response was not JSON |
 
 ```typescript
@@ -89,6 +108,36 @@ try {
 The original failure is always kept on `cause` rather than folded into the
 message, so a network failure can still be inspected.
 
+### Configuration
+
+```typescript
+import { configure, getConfig } from "node-rdap";
+
+configure({ timeoutMs: 5000, cacheTtlSeconds: 3600 });
+```
+
+| Setting | Default | Meaning |
+| --- | --- | --- |
+| `timeoutMs` | `10000` | How long any single request may take |
+| `cacheTtlSeconds` | `86400` | How long a cached lookup stays valid |
+
+Settings apply process wide, to requests made after the call. A cached entry
+keeps the lifetime it was stored with.
+
+### Caching
+
+Lookups are backed by in-memory caches, so repeated queries do not re-fetch the
+IANA bootstrap files. The first lookup of a kind fetches the relevant registry
+list and caches every entry in it, so later lookups of other names of the same
+kind are answered without another request.
+
+```typescript
+import { flushCaches, resetCaches } from "node-rdap";
+
+flushCaches();        // empty everything; the next lookup refetches
+await resetCaches();  // empty and refetch now, leaving the caches warm
+```
+
 ## Command line
 
 Installing globally puts a `node-rdap` command on your path:
@@ -105,9 +154,14 @@ Or run it without installing:
     $ node-rdap ip 140.82.121.4
     $ node-rdap ip 2a00:1450:4009:818::200e
     $ node-rdap autnum 1
+    $ node-rdap nameserver ns1.github.com
+    $ node-rdap entity ZG39-ARIN
 
+    $ node-rdap --timeout 5000 domain github.com
     $ node-rdap --help
     $ node-rdap --version
+
+A failed lookup writes the reason to stderr and exits non-zero.
 
 ### Interactive mode
 
@@ -118,16 +172,8 @@ treated as a command:
     domain github.com
     ip 140.82.121.4
 
-An unrecognised command prints the help text; the session keeps running.
-
-## Caching
-
-Lookups are backed by in-memory caches so that repeated queries do not re-fetch
-the IANA bootstrap files. The first lookup of a kind fetches the relevant
-registry list from IANA and caches every entry in it, so subsequent lookups for
-other names of the same kind are answered without another request.
-
-Caches live for the lifetime of the process.
+An unrecognised command prints the help text and the session keeps running. A
+failed lookup there does not end the session or fail the process.
 
 ## Licence
 

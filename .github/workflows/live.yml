@@ -1,0 +1,33 @@
+name: Live network check
+
+# The test suite is fully mocked, so nothing in CI notices if IANA changes the
+# shape of a bootstrap file or a registry changes its responses. This runs the
+# real thing on a schedule to catch that, without making every pull request
+# depend on someone else's uptime.
+on:
+  schedule:
+    # Weekly, Monday morning.
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+
+jobs:
+  live:
+    name: Real IANA and registry lookups
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+
+      - name: Look things up for real
+        run: node scripts/live-check.mjs

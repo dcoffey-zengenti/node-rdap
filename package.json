@@ -45,7 +45,8 @@
     "build:cli": "pnpm build && pnpm cli",
     "build-all": "pnpm clean && pnpm build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test:pack": "node scripts/smoke-pack.mjs"
+    "test:pack": "node scripts/smoke-pack.mjs",
+    "test:live": "node scripts/live-check.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.10",
