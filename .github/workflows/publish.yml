@@ -3,16 +3,18 @@ name: Publish
 # Publishes to npm when a version tag is pushed, for example:
 #   git tag v1.0.0 && git push origin v1.0.0
 #
-# Requires an NPM_TOKEN repository secret holding an npm automation token with
-# publish rights on the package.
+# Authenticates by npm trusted publishing (OIDC), so there is no token to
+# store or rotate. npm is configured to trust this repository and this
+# workflow file by name, so renaming this file breaks publishing until the
+# trusted publisher entry on npmjs.com is updated to match.
 on:
   push:
     tags: ["v*"]
 
 permissions:
   contents: read
-  # Lets npm attest where the package was built from. The repository is public,
-  # which provenance requires.
+  # Required for trusted publishing: lets the runner mint the OIDC token npm
+  # authenticates with. Without it the publish fails with an auth error.
   id-token: write
 
 jobs:
@@ -31,6 +33,24 @@ jobs:
           node-version: "24"
           cache: pnpm
           registry-url: "https://registry.npmjs.org"
+
+      # Trusted publishing needs npm 11.5.1 or later. Node 24 bundles a new
+      # enough npm, but fail with a clear message rather than a confusing auth
+      # error if that ever stops being true.
+      - name: Check npm supports trusted publishing
+        shell: bash
+        run: |
+          installed="$(npm --version)"
+          node -e '
+            const [major, minor, patch] = process.argv[1].split(".").map(Number);
+            const ok =
+              major > 11 || (major === 11 && (minor > 5 || (minor === 5 && patch >= 1)));
+            if (!ok) {
+              console.error(`::error::npm ${process.argv[1]} is too old for trusted publishing, 11.5.1 or later is required`);
+              process.exit(1);
+            }
+            console.log(`npm ${process.argv[1]} supports trusted publishing`);
+          ' "$installed"
 
       - run: pnpm install --frozen-lockfile
 
@@ -80,7 +100,7 @@ jobs:
             echo "Stable: publishing under the 'latest' tag"
           fi
 
+      # No token and no --provenance flag: trusted publishing authenticates over
+      # OIDC and attaches provenance attestations by itself.
       - name: Publish
-        run: npm publish --provenance --access public --tag "${{ steps.disttag.outputs.tag }}"
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public --tag "${{ steps.disttag.outputs.tag }}"
