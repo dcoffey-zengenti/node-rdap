@@ -8,6 +8,7 @@ Corrected `engines` to `^22.12.0 || >=24`. The previous range, `>=20.19.0 || >=2
 Added continuous integration running typecheck, lint, tests, build and a packaging smoke test against Node 22 and 24.
 Added `pnpm test:pack`, which packs the tarball, installs it into a scratch project and checks it as a consumer sees it. It needs a network, so it is not part of `pnpm test`.
 Readme now documents the CLI, interactive mode, caching, the supported Node versions and that the package is ESM only.
+Moved to punynode 1.0. The only production dependency that was still on a `^0.x` range is now on a stable major, so a patch release of it can no longer introduce a breaking change here.
 
 # 0.5.2
 

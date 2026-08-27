@@ -1,11 +1,19 @@
 engineStrict: true
 
-# Exempt this one version from pnpm's 24h minimumReleaseAge quarantine.
-# @types/node@26.4.0 was published 2026-08-27 and is otherwise blocked.
-# Scoped to the exact version on purpose: a bare "@types/node" entry would
-# exempt every future publish of the package from the guard.
+# Exempt specific versions from pnpm's 24h minimumReleaseAge quarantine, for
+# packages that were added within a day of being published.
+#
+# Every entry is scoped to an exact version on purpose: a bare package name
+# would exempt every future publish of that package from the guard.
+#
+# pnpm 12 appends to this list automatically for a directly requested
+# dependency rather than refusing the install. Set minimumReleaseAgeStrict to
+# true if these should be gated behind a prompt instead.
+#
+# These entries can be dropped once the versions are older than the cutoff.
 minimumReleaseAgeExclude:
-  - "@types/node@26.4.0"
+  - '@types/node@26.4.0'
+  - '@dcoffey-zengenti/punynode@1.0.0'
 
 # pnpm 11 makes unrecorded build scripts a hard error (ERR_PNPM_IGNORED_BUILDS),
 # which makes every pnpm command exit 1 until each one is decided.
