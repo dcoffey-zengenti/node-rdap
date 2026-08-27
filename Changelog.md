@@ -3,7 +3,7 @@
 The first stable release. The API described here is the one 1.x will keep.
 
 Added `nameserver()`, for looking up a nameserver by name. It is routed by its own top level domain, through the same IANA bootstrap list as `domain()`.
-Added `entity()`, for looking up an entity by its handle. Handles are routed by the provider tag after the final hyphen, from the RFC 8521 object tags registry. Only a handful of providers register a tag, so a handle without one cannot be routed and says so plainly. This is a limit of the protocol rather than of this package.
+Added `entity()`, for looking up an entity by url or by handle. Entities are normally found inside another response, which carries a `self` link to them, and passing that url is the reliable way to fetch one — only `http` and `https` urls are accepted, since a self link's scheme is not something the caller chose. A bare handle also works, but only when it ends in one of the eight provider tags registered under RFC 8521, so most registrar and registry handles are not routable that way and the error says so.
 Added request timeouts, defaulting to 10 seconds and applied to every request a lookup makes. There was previously no limit at all, so a server that accepted a connection and then went quiet would hang the caller indefinitely. Exceeding the budget raises `RdapTimeoutError`.
 Added `configure({ timeoutMs, cacheTtlSeconds })` and `getConfig()` for setting policy once per process.
 Added `flushCaches()` and `resetCaches()`, so cache control is reachable now that the exports map has closed off the internals.

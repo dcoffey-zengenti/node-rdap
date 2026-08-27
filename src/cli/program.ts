@@ -113,9 +113,12 @@ export const createProgram = ({ setExitCode = true } = {}): Command => {
 	// Register entity command with commander
 	program
 		.command("entity")
-		.description("Lookup an entity by its tagged handle via RDAP")
-		.argument("<handle>", "The entity handle to lookup, such as ABC123-ARIN")
-		.usage("ABC123-ARIN")
+		.description("Lookup an entity by url, or by tagged handle, via RDAP")
+		.argument(
+			"<handleOrUrl>",
+			"An entity url, or a tagged handle such as ABC123-ARIN",
+		)
+		.usage("https://rdap.example.net/entity/ABC123")
 		.action(async (arg: string) => doCommand(entity, arg, setExitCode));
 
 	// Register autnum command with commander

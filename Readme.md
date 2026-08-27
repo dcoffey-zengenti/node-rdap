@@ -37,6 +37,7 @@ await ip("2a00:1450:4009:818::200e");
 await autnum(1);
 await nameserver("ns1.github.com");
 await entity("ZG39-ARIN");
+await entity("https://rdap.nominet.uk/uk/entity/BBC");
 ```
 
 ### What each lookup covers
@@ -47,12 +48,29 @@ await entity("ZG39-ARIN");
 | `ip(address)` | An IPv4 or IPv6 address | The IANA IPv4/IPv6 bootstrap files |
 | `autnum(number)` | An Autonomous System Number | The IANA ASN bootstrap file |
 | `nameserver(name)` | A nameserver host name | The DNS bootstrap file, by its own tld |
-| `entity(handle)` | A tagged entity handle | The RFC 8521 object tags registry |
+| `entity(handleOrUrl)` | An entity url, or a tagged handle | The url itself, or the RFC 8521 object tags registry |
 
-**Entity lookups are limited by design.** RFC 8521 routes a handle by the
-provider tag after its final hyphen, and only a handful of providers register
-one. `entity("ZG39-ARIN")` works; a handle with no registered tag cannot be
-routed at all and raises `RdapServerNotFoundError`.
+### Entities
+
+Entities are normally found inside another response, which carries a `self`
+link to them. That url is the reliable way to fetch one:
+
+```typescript
+const result = await domain("bbc.co.uk");
+const self = result.entities?.[0]?.links?.find((link) => link.rel === "self");
+if (self) {
+  const registrar = await entity(self.href);
+}
+```
+
+`entity()` also accepts a bare handle, but only a handle ending in one of the
+provider tags registered under [RFC 8521](https://datatracker.ietf.org/doc/html/rfc8521)
+can be routed that way — there are eight, essentially the regional internet
+registries. `entity("ZG39-ARIN")` resolves; `entity("BBC")` cannot, and raises
+`RdapServerNotFoundError` telling you to use the self link instead.
+
+Only `http` and `https` urls are accepted. A self link comes from a remote
+response, so its scheme is not necessarily one you chose.
 
 `help` and the search endpoints (`/domains?name=`, `/nameservers?ip=`) are not
 implemented.
@@ -156,6 +174,7 @@ Or run it without installing:
     $ node-rdap autnum 1
     $ node-rdap nameserver ns1.github.com
     $ node-rdap entity ZG39-ARIN
+    $ node-rdap entity https://rdap.nominet.uk/uk/entity/BBC
 
     $ node-rdap --timeout 5000 domain github.com
     $ node-rdap --help

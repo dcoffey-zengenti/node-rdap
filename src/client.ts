@@ -188,38 +188,81 @@ export const nameserver = async (
 };
 
 /**
- * Looks up an entity over RDAP.
+ * Whether a value looks like a url rather than a handle.
  *
- * Entities are routed by the provider tag on the end of the handle, from the
- * RFC 8521 object tags registry — a different bootstrap list to the other
- * lookups. Only a handful of providers register a tag, so a handle without one
- * cannot be resolved at all.
- * @param handle - The entity handle to look up, such as "ABC123-ARIN"
- * @throws {@link RdapValidationError} if the handle is empty
- * @throws {@link RdapServerNotFoundError} if the handle carries no known tag
+ * RDAP handles are alphanumerics and hyphens, so a scheme prefix is an
+ * unambiguous signal.
+ */
+const looksLikeUrl = (value: string): boolean =>
+	/^[a-z][a-z0-9+.-]*:/i.test(value);
+
+/**
+ * Looks up an entity over RDAP, by url or by handle.
+ *
+ * Most entities are found inside another response, which carries a `self` link
+ * to them. Pass that url and it is fetched directly — this is the usual case,
+ * because entity handles are only routable when they end in one of the few
+ * provider tags registered under RFC 8521.
+ *
+ * ```ts
+ * const result = await domain("bbc.co.uk");
+ * const self = result.entities?.[0]?.links?.find((l) => l.rel === "self");
+ * if (self) await entity(self.href);
+ *
+ * await entity("ZG39-ARIN"); // routable by tag
+ * ```
+ * @param handleOrUrl - An entity handle, or the url of an entity resource
+ * @throws {@link RdapValidationError} if the value is empty, is not an http or
+ * https url, or is a handle carrying no registered provider tag
+ * @throws {@link RdapServerNotFoundError} if the handle's tag is not registered
  * @throws {@link RdapRegistryError} if the registry answers with an error
  * @throws {@link RdapTimeoutError} if the request exceeds the configured budget
  * @throws {@link RdapNetworkError} if the registry cannot be reached
  */
-export const entity = async (handle: string): Promise<RdapEntityResponse> => {
-	const normalized = handle.trim();
+export const entity = async (
+	handleOrUrl: string,
+): Promise<RdapEntityResponse> => {
+	const normalized = handleOrUrl.trim();
 	if (!normalized) {
 		throw new RdapValidationError(
-			"An entity handle is required.",
-			handle,
+			"An entity handle or url is required.",
+			handleOrUrl,
 		);
+	}
+
+	if (looksLikeUrl(normalized)) {
+		let url: URL;
+		try {
+			url = new URL(normalized);
+		} catch {
+			throw new RdapValidationError(
+				`"${normalized}" is not a valid url.`,
+				normalized,
+			);
+		}
+
+		// A self link comes from a remote response, so the scheme is not
+		// something the caller necessarily chose. Only ever speak http.
+		if (url.protocol !== "https:" && url.protocol !== "http:") {
+			throw new RdapValidationError(
+				`"${normalized}" is not an http or https url.`,
+				normalized,
+			);
+		}
+
+		return requestJson<RdapEntityResponse>(url.href);
 	}
 
 	const rdapServer = await entityCache.get(normalized);
 	if (!rdapServer) {
 		throw new RdapServerNotFoundError(
 			`No RDAP service provider is registered for the handle "${normalized}". ` +
-				"Entity lookups only work for handles ending in a registered provider tag, such as \"ABC123-ARIN\".",
+				"Only handles ending in a registered provider tag, such as " +
+				'"ABC123-ARIN", can be looked up by handle. For any other entity, ' +
+				"pass the url of its self link instead.",
 			normalized,
 		);
 	}
 
-	return requestJson<RdapEntityResponse>(
-		`${rdapServer}/entity/${normalized}`,
-	);
+	return requestJson<RdapEntityResponse>(`${rdapServer}/entity/${normalized}`);
 };

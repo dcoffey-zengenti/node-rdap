@@ -34,7 +34,24 @@ const checks = [
 	["ipv6", () => ip("2001:4860:4860::8888"), "ip network"],
 	["autnum", () => autnum(15169), "autnum"],
 	["nameserver", () => nameserver("ns1.google.com"), "nameserver"],
-	["entity", () => entity("ZG39-ARIN"), "entity"],
+	["entity (by tag)", () => entity("ZG39-ARIN"), "entity"],
+	[
+		"entity (by url)",
+		() => entity("https://rdap.nominet.uk/uk/entity/BBC"),
+		"entity",
+	],
+	[
+		"entity (following a self link)",
+		async () => {
+			const result = await domain("bbc.co.uk");
+			const self = result.entities
+				?.flatMap((e) => e.links ?? [])
+				.find((l) => l.rel === "self");
+			if (!self) throw new Error("no entity self link in the response");
+			return entity(self.href);
+		},
+		"entity",
+	],
 ];
 
 let failed = 0;
